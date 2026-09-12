@@ -17,17 +17,21 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 # ---------------------------------------------------------------------------
 
 # Never hard-code this — set NAVVI_SECRET_KEY in your environment.
-SECRET_KEY = os.environ.get("NAVVI_SECRET_KEY", "insecure-dev-key-change-me")
+# Never hard-code this — set NAVVI_SECRET_KEY in your environment.
+SECRET_KEY = os.environ.get(
+    "NAVVI_SECRET_KEY",
+    "insecure-dev-key-change-me"
+)
 
 DEBUG = os.environ.get("NAVVI_DEBUG", "True") == "True"
 
 ALLOWED_HOSTS = os.environ.get(
-    "https://navvi-7efe.onrender.com",
+    "NAVVI_ALLOWED_HOSTS",
     "localhost,127.0.0.1"
 ).split(",")
 
 CSRF_TRUSTED_ORIGINS = (
-    os.environ.get("https://navvi-xxxx.onrender.com", "").split(",")
+    os.environ.get("NAVVI_CSRF_TRUSTED_ORIGINS", "").split(",")
     if os.environ.get("NAVVI_CSRF_TRUSTED_ORIGINS")
     else []
 )
@@ -43,7 +47,6 @@ else:
     SECURE_SSL_REDIRECT = False
     SESSION_COOKIE_SECURE = False
     CSRF_COOKIE_SECURE = False
-
 # ---------------------------------------------------------------------------
 # Applications
 # ---------------------------------------------------------------------------

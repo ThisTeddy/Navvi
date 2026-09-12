@@ -27,7 +27,7 @@ ALLOWED_HOSTS = os.environ.get(
 ).split(",")
 
 CSRF_TRUSTED_ORIGINS = (
-    os.environ.get("NAVVI_CSRF_TRUSTED_ORIGINS", "").split(",")
+    os.environ.get("https://navvi-xxxx.onrender.com", "").split(",")
     if os.environ.get("NAVVI_CSRF_TRUSTED_ORIGINS")
     else []
 )

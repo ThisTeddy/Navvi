@@ -1,0 +1,31 @@
+{% extends "base.html" %}
+{% block title %}Log in — Navvi{% endblock %}
+{% block content %}
+<div class="max-w-sm mx-auto" x-data="{ submitting: false }">
+    <h1 class="text-2xl font-semibold mb-5">Log in</h1>
+    {% if error %}
+        <div class="bg-alert/10 text-alert border border-alert/30 rounded-lg px-4 py-3 mb-4 text-sm">{{ error }}</div>
+    {% endif %}
+    <form method="post" @submit="submitting = true" class="bg-white border border-border rounded-xl p-6">
+        {% csrf_token %}
+        <div class="mb-4">
+            <label class="block text-sm font-medium mb-1">Phone number</label>
+            <input type="text" name="phone_number" required
+                   class="w-full border border-border rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-primary">
+        </div>
+        <div class="mb-4">
+            <label class="block text-sm font-medium mb-1">Password</label>
+            <input type="password" name="password" required
+                   class="w-full border border-border rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-primary">
+        </div>
+        <button type="submit" :disabled="submitting"
+                class="w-full bg-accent text-primaryDark font-medium rounded-lg py-2.5 hover:bg-amber-500 transition disabled:opacity-60">
+            <span x-show="!submitting">Log in</span>
+            <span x-show="submitting">Logging in&hellip;</span>
+        </button>
+    </form>
+    <p class="text-center mt-4 text-sm">
+        <a href="{% url 'nurse_register' %}" class="text-primary font-medium">Register as a nurse</a>
+    </p>
+</div>
+{% endblock %}

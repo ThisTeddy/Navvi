@@ -1,0 +1,30 @@
+{% extends "base.html" %}
+{% block title %}My Bookings — Navvi{% endblock %}
+{% block content %}
+<div class="flex items-center justify-between mb-5">
+    <h1 class="text-2xl font-semibold">My bookings</h1>
+    <a href="{% url 'care_request_create' %}" class="bg-primary text-white font-medium rounded-lg px-4 py-2 hover:bg-primaryDark transition">Book care</a>
+</div>
+<table class="w-full bg-white border border-border rounded-xl overflow-hidden">
+    <thead>
+        <tr class="border-b border-border">
+            <th class="text-left text-muted font-medium px-4 py-3">Care type</th>
+            <th class="text-left text-muted font-medium px-4 py-3">Status</th>
+            <th class="text-left text-muted font-medium px-4 py-3">Appointment</th>
+            <th class="px-4 py-3"></th>
+        </tr>
+    </thead>
+    <tbody>
+    {% for cr in care_requests %}
+        <tr class="border-b border-border last:border-0">
+            <td class="px-4 py-3">{{ cr.get_care_type_display }}</td>
+            <td class="px-4 py-3"><span class="bg-border text-primaryDark text-sm font-medium px-3 py-1 rounded-full">{{ cr.get_status_display }}</span></td>
+            <td class="px-4 py-3">{{ cr.requested_appointment_time }}</td>
+            <td class="px-4 py-3"><a href="{% url 'care_request_detail' cr.id %}" class="text-primary font-medium">View</a></td>
+        </tr>
+    {% empty %}
+        <tr><td colspan="4" class="px-4 py-6 text-center text-muted">No bookings yet.</td></tr>
+    {% endfor %}
+    </tbody>
+</table>
+{% endblock %}

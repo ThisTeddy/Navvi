@@ -1,0 +1,47 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{% block title %}Navvi{% endblock %}</title>
+    <link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,400;9..144,500;9..144,600&family=Work+Sans:wght@400;500;600&display=swap" rel="stylesheet">
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+      tailwind.config = {
+        theme: {
+          extend: {
+            colors: {
+              bg: '#EFF3EC', ink: '#16211D', muted: '#5B6B63', border: '#D8E0DA',
+              primary: '#1B4B43', primaryDark: '#102E29', accent: '#E8A33D', alert: '#C1553D',
+            },
+            fontFamily: { display: ['Fraunces', 'serif'], body: ['Work Sans', 'sans-serif'] },
+          },
+        },
+      };
+    </script>
+    <script src="https://unpkg.com/alpinejs@3.x.x/dist/cdn.min.js" defer></script>
+    <style>
+      body { font-family: 'Work Sans', sans-serif; }
+      h1, h2, h3, .font-display { font-family: 'Fraunces', serif; }
+    </style>
+</head>
+<body class="bg-bg text-ink min-h-screen">
+    <header class="bg-primary">
+        <div class="max-w-5xl mx-auto px-6 py-4 flex items-center justify-between">
+            <a href="/" class="font-display text-xl font-semibold text-white">Navvi</a>
+            {% if user.is_authenticated %}
+                <div class="flex items-center gap-4">
+                    <span class="text-white/85 text-sm">{{ user.get_full_name }} &middot; {{ user.role|capfirst }}</span>
+                    <form method="post" action="{% url 'logout' %}">
+                        {% csrf_token %}
+                        <button type="submit" class="border border-white/40 text-white text-sm rounded-lg px-4 py-1.5 hover:bg-white/10 transition">Log out</button>
+                    </form>
+                </div>
+            {% endif %}
+        </div>
+    </header>
+    <main class="max-w-5xl mx-auto px-6 py-10">
+        {% block content %}{% endblock %}
+    </main>
+</body>
+</html>

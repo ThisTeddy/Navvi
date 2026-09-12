@@ -1,0 +1,49 @@
+{% extends "base.html" %}
+{% block title %}Booking — Navvi{% endblock %}
+{% block content %}
+<h1 class="text-2xl font-semibold mb-5">Booking detail</h1>
+<table class="w-full bg-white border border-border rounded-xl overflow-hidden mb-6">
+    <tr class="border-b border-border"><th class="text-left text-muted font-medium px-4 py-3">Care type</th><td class="px-4 py-3">{{ care_request.get_care_type_display }}</td></tr>
+    <tr class="border-b border-border"><th class="text-left text-muted font-medium px-4 py-3">Duration</th><td class="px-4 py-3">{{ care_request.get_duration_type_display }}</td></tr>
+    <tr class="border-b border-border"><th class="text-left text-muted font-medium px-4 py-3">Status</th><td class="px-4 py-3"><span class="bg-border text-primaryDark text-sm font-medium px-3 py-1 rounded-full">{{ care_request.get_status_display }}</span></td></tr>
+    <tr class="border-b border-border"><th class="text-left text-muted font-medium px-4 py-3">Appointment time</th><td class="px-4 py-3">{{ care_request.requested_appointment_time }}</td></tr>
+    <tr><th class="text-left text-muted font-medium px-4 py-3">Landmark</th><td class="px-4 py-3">{{ care_request.landmark }}</td></tr>
+</table>
+
+{% if care_request.status == "created" or care_request.status == "awaiting_payment" %}
+<div class="max-w-sm bg-white border border-border rounded-xl p-6"
+     x-data="{
+        amount: 5000,
+        paying: false,
+        error: '',
+        async pay() {
+            this.paying = true; this.error = '';
+            const resp = await fetch('{% url 'payment_initiate' care_request.id %}', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/x-www-form-urlencoded',
+                    'X-CSRFToken': '{{ csrf_token }}',
+                },
+                body: new URLSearchParams({ amount: this.amount }),
+            });
+            const data = await resp.json();
+            if (resp.ok && data.authorization_url) {
+                window.location.href = data.authorization_url;
+            } else {
+                this.error = data.error || JSON.stringify(data.errors || data);
+                this.paying = false;
+            }
+        }
+     }">
+    <h3 class="font-medium mb-3">Pay for this booking</h3>
+    <label class="block text-sm font-medium mb-1">Amount (&#8358;)</label>
+    <input type="number" x-model="amount" class="w-full border border-border rounded-lg px-3 py-2 mb-3 focus:outline-none focus:ring-2 focus:ring-primary">
+    <button @click="pay" :disabled="paying"
+            class="w-full bg-primary text-white font-medium rounded-lg py-2.5 hover:bg-primaryDark transition disabled:opacity-60">
+        <span x-show="!paying">Pay with Paystack</span>
+        <span x-show="paying">Redirecting&hellip;</span>
+    </button>
+    <div class="text-alert text-sm mt-2" x-text="error"></div>
+</div>
+{% endif %}
+{% endblock %}

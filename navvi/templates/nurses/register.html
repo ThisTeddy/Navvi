@@ -1,0 +1,46 @@
+{% extends "base.html" %}
+{% block title %}Register as a Nurse — Navvi{% endblock %}
+{% block content %}
+<div class="max-w-md mx-auto" x-data="{ submitting: false }">
+    <h1 class="text-2xl font-semibold mb-1">Nurse registration</h1>
+    <p class="text-muted mb-5">You'll be able to accept jobs once your NMCN license is verified.</p>
+    <form method="post" @submit="submitting = true" class="bg-white border border-border rounded-xl p-6">
+        {% csrf_token %}
+        <div class="mb-4">
+            <label class="block text-sm font-medium mb-1">Full name</label>
+            <input type="text" name="full_name" value="{{ data.full_name }}"
+                   class="w-full border border-border rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-primary">
+            {% if errors.full_name %}<div class="text-alert text-sm mt-1">{{ errors.full_name }}</div>{% endif %}
+        </div>
+        <div class="mb-4">
+            <label class="block text-sm font-medium mb-1">Phone number</label>
+            <input type="text" name="phone_number" value="{{ data.phone_number }}"
+                   class="w-full border border-border rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-primary">
+            {% if errors.phone_number %}<div class="text-alert text-sm mt-1">{{ errors.phone_number }}</div>{% endif %}
+        </div>
+        <div class="mb-4">
+            <label class="block text-sm font-medium mb-1">NMCN registration number</label>
+            <input type="text" name="nmcn_registration_number" value="{{ data.nmcn_registration_number }}"
+                   class="w-full border border-border rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-primary">
+            {% if errors.nmcn_registration_number %}<div class="text-alert text-sm mt-1">{{ errors.nmcn_registration_number }}</div>{% endif %}
+        </div>
+        <div class="mb-4">
+            <label class="block text-sm font-medium mb-1">Government ID number</label>
+            <input type="text" name="government_id_number" value="{{ data.government_id_number }}"
+                   class="w-full border border-border rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-primary">
+            {% if errors.government_id_number %}<div class="text-alert text-sm mt-1">{{ errors.government_id_number }}</div>{% endif %}
+        </div>
+        <div class="mb-5">
+            <label class="block text-sm font-medium mb-1">Password</label>
+            <input type="password" name="password"
+                   class="w-full border border-border rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-primary">
+            {% if errors.password %}<div class="text-alert text-sm mt-1">{{ errors.password }}</div>{% endif %}
+        </div>
+        <button type="submit" :disabled="submitting"
+                class="w-full bg-accent text-primaryDark font-medium rounded-lg py-2.5 hover:bg-amber-500 transition disabled:opacity-60">
+            <span x-show="!submitting">Register</span>
+            <span x-show="submitting">Registering&hellip;</span>
+        </button>
+    </form>
+</div>
+{% endblock %}

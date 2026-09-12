@@ -22,7 +22,7 @@ SECRET_KEY = os.environ.get("NAVVI_SECRET_KEY", "insecure-dev-key-change-me")
 DEBUG = os.environ.get("NAVVI_DEBUG", "True") == "True"
 
 ALLOWED_HOSTS = os.environ.get(
-    "NAVVI_ALLOWED_HOSTS",
+    "https://navvi-7efe.onrender.com",
     "localhost,127.0.0.1"
 ).split(",")
 

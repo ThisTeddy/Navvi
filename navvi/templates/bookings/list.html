@@ -1,30 +1,467 @@
 {% extends "base.html" %}
-{% block title %}My Bookings — Navvi{% endblock %}
+{% block title %}My bookings — Navvi{% endblock %}
+
 {% block content %}
-<div class="flex items-center justify-between mb-5">
-    <h1 class="text-2xl font-semibold">My bookings</h1>
-    <a href="{% url 'care_request_create' %}" class="bg-primary text-white font-medium rounded-lg px-4 py-2 hover:bg-primaryDark transition">Book care</a>
+<div
+  x-data="{ activeFilter: 'all' }"
+  class="relative min-h-[calc(100vh-5rem)] overflow-hidden"
+>
+
+  <!-- Ambient background -->
+  <div class="pointer-events-none absolute inset-0 overflow-hidden">
+    <div class="absolute -top-40 -right-40 w-96 h-96 rounded-full bg-plum-200/30 blur-3xl"></div>
+    <div class="absolute top-[35%] -left-40 w-80 h-80 rounded-full bg-purple-100/40 blur-3xl"></div>
+    <div class="absolute bottom-0 right-[20%] w-72 h-72 rounded-full bg-fuchsia-100/20 blur-3xl"></div>
+  </div>
+
+  <div class="relative max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-7 sm:py-10 lg:py-14">
+
+    <!-- ─────────────────────────────────────────────
+         HEADER
+    ───────────────────────────────────────────── -->
+    <section
+      class="relative overflow-hidden rounded-[2rem] sm:rounded-[2.5rem] bg-ink text-white shadow-2xl shadow-ink/10"
+      data-reveal
+    >
+      <!-- Decorative geometry -->
+      <div class="absolute inset-0 pointer-events-none">
+        <div class="absolute -top-24 -right-16 w-72 h-72 rounded-full border border-white/10"></div>
+        <div class="absolute -top-8 right-8 w-40 h-40 rounded-full border border-white/10"></div>
+        <div class="absolute -bottom-28 left-[38%] w-80 h-80 rounded-full bg-plum-600/20 blur-3xl"></div>
+        <div class="absolute top-0 right-0 w-64 h-64 bg-plum-600/15 blur-3xl"></div>
+      </div>
+
+      <div class="relative p-6 sm:p-8 lg:p-10">
+
+        <div class="flex flex-col lg:flex-row lg:items-end lg:justify-between gap-8">
+
+          <div class="max-w-2xl">
+            <div class="flex items-center gap-2 mb-5">
+              <span class="inline-flex items-center gap-2 rounded-full border border-white/10 bg-white/5 px-3 py-1.5 text-[11px] font-bold uppercase tracking-[0.16em] text-white/65">
+                <span class="relative flex h-2 w-2">
+                  <span class="absolute inline-flex h-full w-full animate-ping rounded-full bg-plum-400 opacity-70"></span>
+                  <span class="relative inline-flex h-2 w-2 rounded-full bg-plum-400"></span>
+                </span>
+                Care command
+              </span>
+
+              {% if care_requests %}
+              <span class="text-[11px] font-semibold text-white/35">
+                {{ care_requests|length }} booking{{ care_requests|length|pluralize }}
+              </span>
+              {% endif %}
+            </div>
+
+            <h1 class="font-display text-4xl sm:text-5xl lg:text-6xl font-bold tracking-[-0.045em] leading-[0.95]">
+              My bookings<span class="text-plum-400">.</span>
+            </h1>
+
+            <p class="mt-4 max-w-xl text-sm sm:text-base leading-7 text-white/55">
+              Keep track of your care requests, appointments and visit status from one place.
+            </p>
+          </div>
+
+          <a
+            href="{% url 'care_request_create' %}"
+            class="group inline-flex items-center justify-center gap-3 rounded-2xl bg-white text-ink px-5 py-3.5 font-bold text-sm shadow-xl shadow-black/10 hover:bg-plum-50 transition-all duration-200 shrink-0"
+          >
+            <span class="flex items-center justify-center w-8 h-8 rounded-xl bg-plum-600 text-white group-hover:scale-105 transition-transform">
+              <i data-lucide="plus" class="w-4 h-4"></i>
+            </span>
+            <span>Book a nurse</span>
+            <i data-lucide="arrow-up-right" class="w-4 h-4 text-ink/40 group-hover:text-plum-600 transition-colors"></i>
+          </a>
+
+        </div>
+
+        {% if care_requests %}
+        <div class="mt-8 pt-6 border-t border-white/10 grid grid-cols-2 sm:grid-cols-3 gap-4 sm:gap-8 max-w-2xl">
+
+          <div>
+            <p class="text-[10px] uppercase tracking-[0.16em] font-bold text-white/35">
+              Total
+            </p>
+            <p class="mt-1.5 text-2xl font-display font-bold">
+              {{ care_requests|length }}
+            </p>
+          </div>
+
+          <div>
+            <p class="text-[10px] uppercase tracking-[0.16em] font-bold text-white/35">
+              Care access
+            </p>
+            <p class="mt-1.5 text-sm font-semibold text-white/75">
+              Verified nurses
+            </p>
+          </div>
+
+          <div class="hidden sm:block">
+            <p class="text-[10px] uppercase tracking-[0.16em] font-bold text-white/35">
+              Platform
+            </p>
+            <p class="mt-1.5 text-sm font-semibold text-white/75 flex items-center gap-1.5">
+              <i data-lucide="shield-check" class="w-4 h-4 text-plum-400"></i>
+              Navvi protected
+            </p>
+          </div>
+
+        </div>
+        {% endif %}
+
+      </div>
+    </section>
+
+
+    {% if care_requests %}
+
+    <!-- ─────────────────────────────────────────────
+         SECTION CONTROLS
+    ───────────────────────────────────────────── -->
+    <section class="mt-7 sm:mt-9" data-reveal>
+
+      <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+
+        <div>
+          <p class="text-[11px] uppercase tracking-[0.18em] font-bold text-plum-600">
+            Your care activity
+          </p>
+          <h2 class="mt-1 font-display text-xl sm:text-2xl font-bold tracking-tight">
+            Recent bookings
+          </h2>
+        </div>
+
+        <div class="flex items-center gap-2 self-start sm:self-auto">
+          <div class="inline-flex items-center gap-2 rounded-full bg-white border border-plum-100/80 shadow-sm px-3 py-2 text-xs font-semibold text-plum-900/55">
+            <span class="w-2 h-2 rounded-full bg-plum-500"></span>
+            All bookings
+          </div>
+
+          <div class="hidden sm:flex items-center gap-2 rounded-full bg-plum-50 border border-plum-100 px-3 py-2 text-xs font-semibold text-plum-900/50">
+            <i data-lucide="layers-3" class="w-3.5 h-3.5"></i>
+            {{ care_requests|length }} records
+          </div>
+        </div>
+
+      </div>
+    </section>
+
+
+    <!-- ─────────────────────────────────────────────
+         BOOKING LIST
+    ───────────────────────────────────────────── -->
+    <section class="mt-5 sm:mt-6">
+
+      <div class="grid gap-4 sm:gap-5">
+
+        {% for cr in care_requests %}
+
+        <a
+          href="{% url 'care_request_detail' care_request_id=cr.id %}"
+          class="group relative block overflow-hidden rounded-[1.75rem] sm:rounded-[2rem] bg-white border border-plum-100/70 shadow-sm hover:shadow-xl hover:shadow-plum-900/5 hover:-translate-y-0.5 transition-all duration-300"
+          data-reveal
+        >
+
+          <!-- Hover accent -->
+          <div class="absolute inset-y-0 left-0 w-1 bg-plum-600 scale-y-0 group-hover:scale-y-100 transition-transform duration-300 origin-center"></div>
+
+          <!-- Subtle top glow -->
+          <div class="absolute top-0 right-0 w-56 h-32 bg-plum-50/70 blur-3xl opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
+
+          <div class="relative p-5 sm:p-6 lg:p-7">
+
+            <!-- Top row -->
+            <div class="flex items-start justify-between gap-4">
+
+              <div class="flex items-start gap-4 min-w-0">
+
+                <!-- Care type icon -->
+                <div class="relative shrink-0">
+                  <div class="w-12 h-12 sm:w-14 sm:h-14 rounded-[1.15rem] bg-plum-600 text-white flex items-center justify-center shadow-lg shadow-plum-600/20 group-hover:scale-105 transition-transform duration-300">
+                    <span class="font-display text-xl sm:text-2xl font-bold">
+                      {{ cr.get_care_type_display|slice:":1" }}
+                    </span>
+                  </div>
+
+                  <div class="absolute -right-1.5 -bottom-1.5 w-5 h-5 rounded-full bg-white border-2 border-white shadow-sm flex items-center justify-center">
+                    <i data-lucide="heart-pulse" class="w-2.5 h-2.5 text-plum-600"></i>
+                  </div>
+                </div>
+
+                <div class="min-w-0 pt-0.5">
+
+                  <div class="flex flex-wrap items-center gap-2">
+                    <p class="font-display text-lg sm:text-xl font-bold tracking-tight truncate">
+                      {{ cr.get_care_type_display }}
+                    </p>
+                  </div>
+
+                  <div class="flex items-center gap-1.5 mt-1.5 text-sm text-plum-900/45 min-w-0">
+                    <i data-lucide="map-pin" class="w-3.5 h-3.5 shrink-0"></i>
+                    <span class="truncate">
+                      {{ cr.landmark|default:"No landmark provided" }}
+                    </span>
+                  </div>
+
+                </div>
+
+              </div>
+
+              <div class="shrink-0">
+                {% include "partials/_status_badge.html" with status=cr.status label=cr.get_status_display %}
+              </div>
+
+            </div>
+
+
+            <!-- Information rail -->
+            <div class="mt-6 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
+
+              <!-- Appointment -->
+              <div class="rounded-2xl bg-plum-50/60 border border-plum-100/60 p-4 group-hover:bg-plum-50 transition-colors">
+                <div class="flex items-center justify-between gap-3">
+                  <div class="w-8 h-8 rounded-xl bg-white shadow-sm flex items-center justify-center">
+                    <i data-lucide="calendar-clock" class="w-4 h-4 text-plum-600"></i>
+                  </div>
+
+                  <span class="text-[9px] uppercase tracking-[0.16em] font-bold text-plum-900/30">
+                    Appointment
+                  </span>
+                </div>
+
+                <p class="mt-3 text-sm font-bold text-plum-950">
+                  {{ cr.requested_appointment_time|date:"d M Y" }}
+                </p>
+
+                <p class="mt-0.5 text-xs font-medium text-plum-900/45">
+                  {{ cr.requested_appointment_time|date:"g:i A" }}
+                </p>
+              </div>
+
+
+              <!-- Duration -->
+              <div class="rounded-2xl bg-plum-50/60 border border-plum-100/60 p-4 group-hover:bg-plum-50 transition-colors">
+                <div class="flex items-center justify-between gap-3">
+                  <div class="w-8 h-8 rounded-xl bg-white shadow-sm flex items-center justify-center">
+                    <i data-lucide="timer" class="w-4 h-4 text-plum-600"></i>
+                  </div>
+
+                  <span class="text-[9px] uppercase tracking-[0.16em] font-bold text-plum-900/30">
+                    Duration
+                  </span>
+                </div>
+
+                <p class="mt-3 text-sm font-bold text-plum-950">
+                  {{ cr.get_duration_type_display }}
+                </p>
+
+                <p class="mt-0.5 text-xs font-medium text-plum-900/45">
+                  Requested care period
+                </p>
+              </div>
+
+
+              <!-- Location -->
+              <div class="rounded-2xl bg-plum-50/60 border border-plum-100/60 p-4 group-hover:bg-plum-50 transition-colors sm:col-span-2 lg:col-span-1">
+                <div class="flex items-center justify-between gap-3">
+                  <div class="w-8 h-8 rounded-xl bg-white shadow-sm flex items-center justify-center">
+                    <i data-lucide="navigation" class="w-4 h-4 text-plum-600"></i>
+                  </div>
+
+                  <span class="text-[9px] uppercase tracking-[0.16em] font-bold text-plum-900/30">
+                    Visit location
+                  </span>
+                </div>
+
+                <p class="mt-3 text-sm font-bold text-plum-950 truncate">
+                  {{ cr.landmark|default:"Location provided" }}
+                </p>
+
+                <p class="mt-0.5 text-xs font-medium text-plum-900/45">
+                  Home care visit
+                </p>
+              </div>
+
+            </div>
+
+
+            <!-- Footer -->
+            <div class="mt-5 pt-5 border-t border-plum-100/70 flex items-center justify-between gap-4">
+
+              <div class="flex items-center gap-2.5 min-w-0">
+
+                <div class="flex -space-x-1.5">
+                  <div class="w-7 h-7 rounded-full bg-ink text-white border-2 border-white flex items-center justify-center">
+                    <i data-lucide="user-round" class="w-3 h-3"></i>
+                  </div>
+
+                  <div class="w-7 h-7 rounded-full bg-plum-100 text-plum-700 border-2 border-white flex items-center justify-center">
+                    <i data-lucide="shield-check" class="w-3 h-3"></i>
+                  </div>
+                </div>
+
+                <span class="text-xs font-semibold text-plum-900/45 truncate">
+                  Navvi care request
+                </span>
+
+              </div>
+
+              <span class="inline-flex items-center gap-2 text-xs sm:text-sm font-bold text-plum-700 group-hover:text-plum-600 transition-colors shrink-0">
+                View booking
+                <span class="w-7 h-7 rounded-full bg-plum-50 group-hover:bg-plum-100 flex items-center justify-center transition-colors">
+                  <i data-lucide="arrow-right" class="w-3.5 h-3.5 group-hover:translate-x-0.5 transition-transform"></i>
+                </span>
+              </span>
+
+            </div>
+
+          </div>
+        </a>
+
+        {% endfor %}
+
+      </div>
+
+    </section>
+
+
+    <!-- ─────────────────────────────────────────────
+         BOTTOM CTA
+    ───────────────────────────────────────────── -->
+    <section class="mt-7 sm:mt-9" data-reveal>
+
+      <div class="relative overflow-hidden rounded-[1.75rem] bg-plum-50 border border-plum-100/80 p-5 sm:p-6">
+
+        <div class="absolute -right-16 -top-20 w-48 h-48 rounded-full border border-plum-200/70"></div>
+        <div class="absolute -right-6 -top-10 w-28 h-28 rounded-full bg-white/50"></div>
+
+        <div class="relative flex flex-col sm:flex-row sm:items-center justify-between gap-5">
+
+          <div class="flex items-start gap-4">
+            <div class="w-11 h-11 rounded-2xl bg-white shadow-sm flex items-center justify-center shrink-0">
+              <i data-lucide="plus-circle" class="w-5 h-5 text-plum-600"></i>
+            </div>
+
+            <div>
+              <p class="font-bold text-plum-950">
+                Need another visit?
+              </p>
+              <p class="mt-1 text-xs sm:text-sm leading-5 text-plum-900/50">
+                Create a new care request and find verified nursing support.
+              </p>
+            </div>
+          </div>
+
+          <a
+            href="{% url 'care_request_create' %}"
+            class="inline-flex items-center justify-center gap-2 rounded-xl bg-ink text-white px-4 py-3 text-xs sm:text-sm font-bold hover:bg-plum-700 transition-colors shrink-0"
+          >
+            New booking
+            <i data-lucide="arrow-up-right" class="w-4 h-4"></i>
+          </a>
+
+        </div>
+
+      </div>
+
+    </section>
+
+
+    {% else %}
+
+    <!-- ─────────────────────────────────────────────
+         EMPTY STATE
+    ───────────────────────────────────────────── -->
+    <section
+      class="relative mt-8 sm:mt-10 overflow-hidden rounded-[2rem] sm:rounded-[2.5rem] bg-white border border-plum-100 shadow-sm"
+      data-reveal
+    >
+
+      <div class="absolute inset-0 pointer-events-none overflow-hidden">
+        <div class="absolute top-0 left-1/2 -translate-x-1/2 w-96 h-48 bg-plum-100/40 blur-3xl"></div>
+        <div class="absolute -right-24 bottom-0 w-64 h-64 rounded-full bg-purple-50 blur-3xl"></div>
+      </div>
+
+      <div class="relative px-6 py-14 sm:px-10 sm:py-20 text-center">
+
+        <div class="relative mx-auto w-24 h-24">
+
+          <div class="absolute inset-0 rounded-[2rem] bg-plum-100/60 rotate-6"></div>
+
+          <div class="absolute inset-1 rounded-[1.75rem] bg-plum-600 text-white shadow-xl shadow-plum-600/20 flex items-center justify-center">
+            <i data-lucide="calendar-plus" class="w-9 h-9"></i>
+          </div>
+
+          <div class="absolute -right-2 -bottom-2 w-8 h-8 rounded-full bg-white border border-plum-100 shadow-md flex items-center justify-center">
+            <i data-lucide="plus" class="w-4 h-4 text-plum-600"></i>
+          </div>
+
+        </div>
+
+        <div class="max-w-md mx-auto mt-8">
+
+          <p class="text-[10px] uppercase tracking-[0.2em] font-bold text-plum-600">
+            Your care journey starts here
+          </p>
+
+          <h2 class="mt-3 font-display text-3xl sm:text-4xl font-bold tracking-[-0.03em]">
+            No bookings yet.
+          </h2>
+
+          <p class="mt-4 text-sm sm:text-base leading-7 text-plum-900/50">
+            Book your first verified home visit and manage your care journey directly from Navvi.
+          </p>
+
+        </div>
+
+        <div class="mt-8 flex flex-col sm:flex-row items-center justify-center gap-3">
+
+          <a
+            href="{% url 'care_request_create' %}"
+            class="inline-flex items-center justify-center gap-2.5 rounded-2xl bg-ink text-white px-6 py-3.5 text-sm font-bold shadow-lg shadow-ink/10 hover:bg-plum-700 transition-colors"
+          >
+            <i data-lucide="plus" class="w-4 h-4"></i>
+            Book a nurse
+            <i data-lucide="arrow-up-right" class="w-4 h-4 opacity-60"></i>
+          </a>
+
+        </div>
+
+        <div class="mt-9 flex flex-wrap items-center justify-center gap-x-5 gap-y-2 text-[11px] font-semibold text-plum-900/35">
+          <span class="inline-flex items-center gap-1.5">
+            <i data-lucide="shield-check" class="w-3.5 h-3.5 text-plum-500"></i>
+            Verified nurses
+          </span>
+
+          <span class="w-1 h-1 rounded-full bg-plum-200"></span>
+
+          <span class="inline-flex items-center gap-1.5">
+            <i data-lucide="calendar-clock" class="w-3.5 h-3.5 text-plum-500"></i>
+            Flexible scheduling
+          </span>
+
+          <span class="w-1 h-1 rounded-full bg-plum-200"></span>
+
+          <span class="inline-flex items-center gap-1.5">
+            <i data-lucide="lock" class="w-3.5 h-3.5 text-plum-500"></i>
+            Secure care
+          </span>
+        </div>
+
+      </div>
+    </section>
+
+    {% endif %}
+
+  </div>
 </div>
-<table class="w-full bg-white border border-border rounded-xl overflow-hidden">
-    <thead>
-        <tr class="border-b border-border">
-            <th class="text-left text-muted font-medium px-4 py-3">Care type</th>
-            <th class="text-left text-muted font-medium px-4 py-3">Status</th>
-            <th class="text-left text-muted font-medium px-4 py-3">Appointment</th>
-            <th class="px-4 py-3"></th>
-        </tr>
-    </thead>
-    <tbody>
-    {% for cr in care_requests %}
-        <tr class="border-b border-border last:border-0">
-            <td class="px-4 py-3">{{ cr.get_care_type_display }}</td>
-            <td class="px-4 py-3"><span class="bg-border text-primaryDark text-sm font-medium px-3 py-1 rounded-full">{{ cr.get_status_display }}</span></td>
-            <td class="px-4 py-3">{{ cr.requested_appointment_time }}</td>
-            <td class="px-4 py-3"><a href="{% url 'care_request_detail' cr.id %}" class="text-primary font-medium">View</a></td>
-        </tr>
-    {% empty %}
-        <tr><td colspan="4" class="px-4 py-6 text-center text-muted">No bookings yet.</td></tr>
-    {% endfor %}
-    </tbody>
-</table>
+{% endblock %}
+
+{% block extra_scripts %}
+<script>
+  document.addEventListener('DOMContentLoaded', () => {
+    if (window.lucide) {
+      lucide.createIcons();
+    }
+  });
+</script>
 {% endblock %}

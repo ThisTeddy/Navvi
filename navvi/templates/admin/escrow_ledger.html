@@ -1,0 +1,55 @@
+{% extends "base.html" %}
+{% load humanize %}
+{% block title %}Escrow ledger — Navvi{% endblock %}
+
+{% block content %}
+<div class="max-w-3xl mx-auto px-5 sm:px-8 py-10 md:py-14">
+
+  <p class="text-sm font-semibold text-plum-600 mb-2">Admin</p>
+  <h1 class="font-display text-3xl sm:text-4xl font-700">Escrow ledger</h1>
+  <p class="mt-2 text-plum-900/60">{{ escrow.care_request.get_care_type_display }} · {{ escrow.care_request.patient.get_full_name }}</p>
+
+  <!-- Summary -->
+  <div class="mt-8 grid grid-cols-3 gap-4">
+    <div class="bg-plum-50 rounded-2xl p-4">
+      <p class="text-xs text-plum-900/40">Held</p>
+      <p class="font-display text-lg font-700 mt-1">₦{{ escrow.total_held|floatformat:2|intcomma }}</p>
+    </div>
+    <div class="bg-plum-50 rounded-2xl p-4">
+      <p class="text-xs text-plum-900/40">Released</p>
+      <p class="font-display text-lg font-700 mt-1 text-plum-700">₦{{ escrow.total_released|floatformat:2|intcomma }}</p>
+    </div>
+    <div class="bg-plum-50 rounded-2xl p-4">
+      <p class="text-xs text-plum-900/40">Commission rate</p>
+      <p class="font-display text-lg font-700 mt-1">{{ escrow.commission_rate|floatformat:0 }}%</p>
+    </div>
+  </div>
+
+  <!-- Entries -->
+  <div class="mt-10">
+    <h2 class="font-display text-xl font-700">Ledger entries</h2>
+
+    {% if entries %}
+    <div class="mt-4 grid gap-3">
+      {% for entry in entries %}
+      <div class="bg-white border border-plum-100 rounded-2xl p-4 sm:p-5 flex items-center justify-between gap-4">
+        <div class="min-w-0">
+          <div class="flex items-center gap-2">
+            {% include "partials/_status_badge.html" with status=entry.entry_type label=entry.get_entry_type_display %}
+          </div>
+          {% if entry.note %}<p class="text-sm text-plum-900/60 mt-1.5">{{ entry.note }}</p>{% endif %}
+          <p class="text-xs text-plum-900/40 mt-1">{{ entry.created_at|date:"d M Y, g:i A" }}</p>
+        </div>
+        <p class="font-display font-700 shrink-0">₦{{ entry.amount|floatformat:2|intcomma }}</p>
+      </div>
+      {% endfor %}
+    </div>
+    {% else %}
+    <div class="mt-4">
+      {% include "partials/_empty_state.html" with title="No entries yet" subtitle="Ledger entries appear as payments are held, released, and commission is taken." %}
+    </div>
+    {% endif %}
+  </div>
+
+</div>
+{% endblock %}

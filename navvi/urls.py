@@ -18,10 +18,19 @@ from django.urls import path
 
 from . import views
 
-
-
 urlpatterns = [
-    path("", views.home, name="home"),
+    # -----------------------------------------------------------------
+    # PWA
+    # -----------------------------------------------------------------
+    path("sw.js", views.service_worker, name="service_worker"),
+    path("", views.home, name=""),
+    # -----------------------------------------------------------------
+    # Auth
+    # -----------------------------------------------------------------
+    path("login/", views.login_view, name="login"),
+    path("logout/", views.logout_view, name="logout"),
+    path("patients/register/", views.patient_register, name="patient_register"),
+
     # -----------------------------------------------------------------
     # A. Nurse onboarding / verification
     # -----------------------------------------------------------------

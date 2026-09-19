@@ -1,47 +1,1612 @@
+{% load static %}
+
 <!DOCTYPE html>
+
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>{% block title %}Navvi{% endblock %}</title>
-    <link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,400;9..144,500;9..144,600&family=Work+Sans:wght@400;500;600&display=swap" rel="stylesheet">
-    <script src="https://cdn.tailwindcss.com"></script>
-    <script>
-      tailwind.config = {
+
+<meta
+    name="viewport"
+    content="width=device-width, initial-scale=1.0, viewport-fit=cover, maximum-scale=1.0"
+>
+
+<meta name="csrf-token" content="{{ csrf_token }}">
+<meta name="theme-color" content="#ffffff">
+
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="default">
+<meta name="apple-mobile-web-app-title" content="Navvi">
+<meta name="format-detection" content="telephone=no">
+
+<title>{% block title %}Navvi{% endblock %}</title>
+
+<link rel="manifest" href="{% static 'manifest.json' %}">
+
+<!-- Tailwind -->
+<script src="https://cdn.tailwindcss.com"></script>
+
+<!-- Alpine -->
+<script
+    defer
+    src="https://cdnjs.cloudflare.com/ajax/libs/alpinejs/3.13.5/cdn.min.js"
+></script>
+
+<!-- Lucide -->
+<script
+    src="https://unpkg.com/lucide@latest"
+></script>
+
+<!-- Fonts -->
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+
+<link
+    href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&family=Manrope:wght@500;600;700;800&display=swap"
+    rel="stylesheet"
+>
+
+<script>
+    tailwind.config = {
         theme: {
-          extend: {
-            colors: {
-              bg: '#EFF3EC', ink: '#16211D', muted: '#5B6B63', border: '#D8E0DA',
-              primary: '#1B4B43', primaryDark: '#102E29', accent: '#E8A33D', alert: '#C1553D',
-            },
-            fontFamily: { display: ['Fraunces', 'serif'], body: ['Work Sans', 'sans-serif'] },
-          },
-        },
-      };
-    </script>
-    <script src="https://unpkg.com/alpinejs@3.x.x/dist/cdn.min.js" defer></script>
-    <style>
-      body { font-family: 'Work Sans', sans-serif; }
-      h1, h2, h3, .font-display { font-family: 'Fraunces', serif; }
-    </style>
+            extend: {
+                colors: {
+                    ink: '#171323',
+
+                    plum: {
+                        50: '#F8F6FD',
+                        100: '#F0ECF9',
+                        200: '#E1D9F2',
+                        300: '#C9BDE5',
+                        400: '#AD9BD4',
+                        500: '#8F79C3',
+                        600: '#7057B1',
+                        700: '#5B4395',
+                        800: '#483477',
+                        900: '#2D214D',
+                    },
+
+                    navvi: {
+                        paper: '#FCFBFE',
+                        line: '#EDEAF2',
+                        muted: '#878191',
+                    }
+                },
+
+                fontFamily: {
+                    display: ['Manrope', 'sans-serif'],
+                    body: ['DM Sans', 'sans-serif'],
+                },
+
+                boxShadow: {
+                    'navvi-xs': '0 3px 14px -8px rgba(45,33,77,.18)',
+                    'navvi-sm': '0 8px 28px -18px rgba(45,33,77,.22)',
+                    'navvi-md': '0 18px 55px -28px rgba(45,33,77,.30)',
+                    'navvi-lg': '0 28px 80px -35px rgba(45,33,77,.38)',
+                },
+
+                keyframes: {
+                    'navvi-in': {
+                        '0%': {
+                            opacity: '0',
+                            transform: 'translateY(10px) scale(.98)'
+                        },
+                        '100%': {
+                            opacity: '1',
+                            transform: 'translateY(0) scale(1)'
+                        }
+                    },
+
+                    'navvi-pop': {
+                        '0%': {
+                            opacity: '0',
+                            transform: 'scale(.92)'
+                        },
+                        '100%': {
+                            opacity: '1',
+                            transform: 'scale(1)'
+                        }
+                    },
+
+                    'navvi-pulse': {
+                        '0%,100%': {
+                            opacity: '1'
+                        },
+                        '50%': {
+                            opacity: '.35'
+                        }
+                    },
+
+                    'navvi-float': {
+                        '0%,100%': {
+                            transform: 'translateY(0)'
+                        },
+                        '50%': {
+                            transform: 'translateY(-3px)'
+                        }
+                    },
+
+                    'navvi-shimmer': {
+                        '0%': {
+                            transform: 'translateX(-120%)'
+                        },
+                        '100%': {
+                            transform: 'translateX(120%)'
+                        }
+                    }
+                },
+
+                animation: {
+                    'navvi-in': 'navvi-in .35s cubic-bezier(.2,.7,.2,1)',
+                    'navvi-pop': 'navvi-pop .22s cubic-bezier(.2,.7,.2,1)',
+                    'navvi-pulse': 'navvi-pulse 1.7s ease-in-out infinite',
+                    'navvi-float': 'navvi-float 3s ease-in-out infinite',
+                    'navvi-shimmer': 'navvi-shimmer 2s linear infinite',
+                }
+            }
+        }
+    };
+</script>
+
+{% block extra_head %}{% endblock %}
+
+
 </head>
-<body class="bg-bg text-ink min-h-screen">
-    <header class="bg-primary">
-        <div class="max-w-5xl mx-auto px-6 py-4 flex items-center justify-between">
-            <a href="/" class="font-display text-xl font-semibold text-white">Navvi</a>
-            {% if user.is_authenticated %}
-                <div class="flex items-center gap-4">
-                    <span class="text-white/85 text-sm">{{ user.get_full_name }} &middot; {{ user.role|capfirst }}</span>
-                    <form method="post" action="{% url 'logout' %}">
-                        {% csrf_token %}
-                        <button type="submit" class="border border-white/40 text-white text-sm rounded-lg px-4 py-1.5 hover:bg-white/10 transition">Log out</button>
-                    </form>
-                </div>
-            {% endif %}
+
+<body
+    class="min-h-screen bg-white text-ink font-body antialiased selection:bg-plum-200 selection:text-plum-900"
+>
+
+
+<!-- =========================================================
+     AMBIENT LAYER
+========================================================== -->
+
+<div
+    aria-hidden="true"
+    class="fixed inset-0 -z-10 overflow-hidden pointer-events-none"
+>
+    <div
+        class="absolute -top-64 -right-52 h-[38rem] w-[38rem] rounded-full bg-plum-100/70 blur-[110px]"
+    ></div>
+
+    <div
+        class="absolute top-[38%] -left-72 h-[32rem] w-[32rem] rounded-full bg-plum-50 blur-[100px]"
+    ></div>
+
+    <div
+        class="absolute bottom-[-18rem] right-[12%] h-[30rem] w-[30rem] rounded-full bg-purple-50/70 blur-[110px]"
+    ></div>
+</div>
+
+
+<!-- =========================================================
+     DJANGO URL MAP
+========================================================== -->
+
+{% url 'available_jobs' as url_jobs %}
+{% url 'nurse_wallet' as url_wallet %}
+{% url 'nurse_verification_status' as url_verify %}
+{% url 'my_care_requests' as url_bookings %}
+{% url 'care_request_create' as url_book %}
+{% url 'admin_dispatch_monitor' as url_dispatch %}
+{% url 'admin_nurse_verification_queue' as url_queue %}
+{% url 'admin_dispute_list' as url_disputes %}
+{% url 'emergency_referral_list' as url_referrals %}
+{% url 'my_notifications' as url_notifications %}
+
+
+<!-- =========================================================
+     APPLICATION SHELL
+========================================================== -->
+
+<div
+    x-data="{
+        accountOpen: false,
+        commandOpen: false,
+        mobileMenuOpen: false
+    }"
+    class="min-h-screen flex flex-col"
+>
+
+    <!-- =====================================================
+         TOP HEADER
+    ====================================================== -->
+
+    <header
+        class="sticky top-0 z-50 border-b border-navvi-line/80 bg-white/85 backdrop-blur-2xl"
+        style="padding-top: env(safe-area-inset-top, 0px);"
+    >
+
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+
+            <div class="h-[4.5rem] flex items-center justify-between gap-5">
+
+                <!-- BRAND -->
+
+                <a
+                    href="/"
+                    class="group flex items-center gap-2.5 shrink-0"
+                >
+
+                    <div
+                        class="relative flex h-9 w-9 items-center justify-center overflow-hidden rounded-xl bg-ink shadow-navvi-xs transition-all duration-300 group-hover:-rotate-3 group-hover:scale-105"
+                    >
+
+                        <div
+                            class="absolute inset-0 bg-gradient-to-br from-plum-500 via-plum-700 to-ink opacity-90"
+                        ></div>
+
+                        <span
+                            class="relative font-display text-[15px] font-extrabold tracking-[-.08em] text-white"
+                        >
+                            n.
+                        </span>
+                    </div>
+
+                    <div class="hidden sm:block">
+                        <div class="flex items-baseline gap-1">
+
+                            <span
+                                class="font-display text-[18px] font-extrabold tracking-[-.055em] text-ink"
+                            >
+                                navvi
+                            </span>
+
+                            <span class="h-1.5 w-1.5 rounded-full bg-plum-600"></span>
+
+                        </div>
+
+                        <p
+                            class="mt-[-1px] text-[8px] font-bold uppercase tracking-[.18em] text-plum-900/30"
+                        >
+                            care network
+                        </p>
+                    </div>
+
+                </a>
+
+
+                {% if request.user.is_authenticated %}
+
+                    <!-- =================================================
+                         DESKTOP NAVIGATION
+                    ================================================== -->
+
+                    <nav
+                        class="hidden lg:flex items-center gap-1 rounded-2xl border border-navvi-line/80 bg-navvi-paper/70 p-1.5"
+                    >
+
+                        {% if request.user.role == 'nurse' %}
+
+                            <a
+                                href="{{ url_jobs }}"
+                                class="group relative flex items-center gap-2 rounded-xl px-4 py-2.5 text-[12px] font-bold transition-all duration-200
+                                {% if request.path == url_jobs %}
+                                    bg-white text-plum-700 shadow-navvi-xs
+                                {% else %}
+                                    text-plum-900/45 hover:bg-white/80 hover:text-plum-700
+                                {% endif %}"
+                            >
+                                <i
+                                    data-lucide="briefcase-business"
+                                    class="h-4 w-4"
+                                ></i>
+
+                                Available jobs
+
+                                {% if request.path == url_jobs %}
+                                    <span class="absolute -bottom-1 left-1/2 h-1 w-1 -translate-x-1/2 rounded-full bg-plum-600"></span>
+                                {% endif %}
+                            </a>
+
+                            <a
+                                href="{{ url_wallet }}"
+                                class="group relative flex items-center gap-2 rounded-xl px-4 py-2.5 text-[12px] font-bold transition-all duration-200
+                                {% if request.path == url_wallet %}
+                                    bg-white text-plum-700 shadow-navvi-xs
+                                {% else %}
+                                    text-plum-900/45 hover:bg-white/80 hover:text-plum-700
+                                {% endif %}"
+                            >
+                                <i data-lucide="wallet" class="h-4 w-4"></i>
+                                Wallet
+
+                                {% if request.path == url_wallet %}
+                                    <span class="absolute -bottom-1 left-1/2 h-1 w-1 -translate-x-1/2 rounded-full bg-plum-600"></span>
+                                {% endif %}
+                            </a>
+
+                            <a
+                                href="{{ url_verify }}"
+                                class="group relative flex items-center gap-2 rounded-xl px-4 py-2.5 text-[12px] font-bold transition-all duration-200
+                                {% if request.path == url_verify %}
+                                    bg-white text-plum-700 shadow-navvi-xs
+                                {% else %}
+                                    text-plum-900/45 hover:bg-white/80 hover:text-plum-700
+                                {% endif %}"
+                            >
+                                <i data-lucide="shield-check" class="h-4 w-4"></i>
+                                Verification
+
+                                {% if request.path == url_verify %}
+                                    <span class="absolute -bottom-1 left-1/2 h-1 w-1 -translate-x-1/2 rounded-full bg-plum-600"></span>
+                                {% endif %}
+                            </a>
+
+                        {% elif request.user.role == 'patient' %}
+
+                            <a
+                                href="{{ url_bookings }}"
+                                class="group relative flex items-center gap-2 rounded-xl px-4 py-2.5 text-[12px] font-bold transition-all duration-200
+                                {% if request.path == url_bookings %}
+                                    bg-white text-plum-700 shadow-navvi-xs
+                                {% else %}
+                                    text-plum-900/45 hover:bg-white/80 hover:text-plum-700
+                                {% endif %}"
+                            >
+                                <i data-lucide="calendar-days" class="h-4 w-4"></i>
+                                My bookings
+                            </a>
+
+                            <a
+                                href="{{ url_book }}"
+                                class="group relative flex items-center gap-2 rounded-xl px-4 py-2.5 text-[12px] font-bold transition-all duration-200
+                                {% if request.path == url_book %}
+                                    bg-white text-plum-700 shadow-navvi-xs
+                                {% else %}
+                                    text-plum-900/45 hover:bg-white/80 hover:text-plum-700
+                                {% endif %}"
+                            >
+                                <i data-lucide="plus" class="h-4 w-4"></i>
+                                Book a nurse
+                            </a>
+
+                        {% elif request.user.role == 'admin' %}
+
+                            <a
+                                href="{{ url_dispatch }}"
+                                class="group flex items-center gap-2 rounded-xl px-4 py-2.5 text-[12px] font-bold transition-all
+                                {% if request.path == url_dispatch %}
+                                    bg-white text-plum-700 shadow-navvi-xs
+                                {% else %}
+                                    text-plum-900/45 hover:bg-white hover:text-plum-700
+                                {% endif %}"
+                            >
+                                <i data-lucide="layout-dashboard" class="h-4 w-4"></i>
+                                Dispatch
+                            </a>
+
+                            <a
+                                href="{{ url_queue }}"
+                                class="group flex items-center gap-2 rounded-xl px-4 py-2.5 text-[12px] font-bold transition-all
+                                {% if request.path == url_queue %}
+                                    bg-white text-plum-700 shadow-navvi-xs
+                                {% else %}
+                                    text-plum-900/45 hover:bg-white hover:text-plum-700
+                                {% endif %}"
+                            >
+                                <i data-lucide="list-checks" class="h-4 w-4"></i>
+                                Nurse queue
+                            </a>
+
+                            <a
+                                href="{{ url_disputes }}"
+                                class="group flex items-center gap-2 rounded-xl px-4 py-2.5 text-[12px] font-bold transition-all
+                                {% if request.path == url_disputes %}
+                                    bg-white text-plum-700 shadow-navvi-xs
+                                {% else %}
+                                    text-plum-900/45 hover:bg-white hover:text-plum-700
+                                {% endif %}"
+                            >
+                                <i data-lucide="flag" class="h-4 w-4"></i>
+                                Disputes
+                            </a>
+
+                        {% elif request.user.role == 'partner' %}
+
+                            <a
+                                href="{{ url_referrals }}"
+                                class="group flex items-center gap-2 rounded-xl px-4 py-2.5 text-[12px] font-bold transition-all
+                                {% if request.path == url_referrals %}
+                                    bg-white text-plum-700 shadow-navvi-xs
+                                {% else %}
+                                    text-plum-900/45 hover:bg-white hover:text-plum-700
+                                {% endif %}"
+                            >
+                                <i data-lucide="heart-pulse" class="h-4 w-4"></i>
+                                Referrals
+                            </a>
+
+                        {% endif %}
+
+                        <a
+                            href="{{ url_notifications }}"
+                            class="group relative flex items-center gap-2 rounded-xl px-4 py-2.5 text-[12px] font-bold transition-all
+                            {% if request.path == url_notifications %}
+                                bg-white text-plum-700 shadow-navvi-xs
+                            {% else %}
+                                text-plum-900/45 hover:bg-white hover:text-plum-700
+                            {% endif %}"
+                        >
+                            <i data-lucide="bell" class="h-4 w-4"></i>
+                            Alerts
+                        </a>
+
+                    </nav>
+
+
+                    <!-- =================================================
+                         RIGHT CONTROLS
+                    ================================================== -->
+
+                    <div class="flex items-center gap-2">
+
+                        <!-- Desktop notification shortcut -->
+
+                        <a
+                            href="{{ url_notifications }}"
+                            class="hidden sm:flex relative h-10 w-10 items-center justify-center rounded-xl border border-navvi-line bg-white text-plum-900/45 transition-all hover:border-plum-200 hover:bg-plum-50 hover:text-plum-700 hover:-translate-y-0.5"
+                            aria-label="Notifications"
+                        >
+                            <i data-lucide="bell" class="h-[17px] w-[17px]"></i>
+
+                            <span class="absolute right-2 top-2 h-1.5 w-1.5 rounded-full bg-plum-600 ring-2 ring-white"></span>
+                        </a>
+
+
+                        <!-- Account -->
+
+                        <div class="relative">
+
+                            <button
+                                @click="accountOpen = !accountOpen"
+                                class="group flex items-center gap-2 rounded-2xl border border-navvi-line bg-white p-1 pr-2 transition-all duration-200 hover:border-plum-200 hover:shadow-navvi-xs"
+                                :class="accountOpen ? 'border-plum-200 shadow-navvi-xs' : ''"
+                                aria-label="Account menu"
+                                :aria-expanded="accountOpen"
+                            >
+
+                                <span
+                                    class="relative flex h-8 w-8 items-center justify-center overflow-hidden rounded-xl bg-gradient-to-br from-plum-100 to-plum-200 text-plum-700"
+                                >
+                                    <i data-lucide="user-round" class="h-[16px] w-[16px]"></i>
+
+                                    <span
+                                        class="absolute bottom-0.5 right-0.5 h-2 w-2 rounded-full bg-emerald-500 ring-2 ring-plum-100"
+                                    ></span>
+                                </span>
+
+                                <span class="hidden xl:block max-w-[110px] text-left">
+                                    <span
+                                        class="block truncate text-[11px] font-extrabold text-ink"
+                                    >
+                                        {{ request.user.get_full_name|default:request.user.username }}
+                                    </span>
+
+                                    <span
+                                        class="block text-[9px] font-bold uppercase tracking-[.12em] text-plum-900/30"
+                                    >
+                                        {{ request.user.role }}
+                                    </span>
+                                </span>
+
+                                <i
+                                    data-lucide="chevron-down"
+                                    class="hidden sm:block h-3.5 w-3.5 text-plum-900/25 transition-transform"
+                                    :class="accountOpen ? 'rotate-180' : ''"
+                                ></i>
+
+                            </button>
+
+
+                            <!-- ACCOUNT POPOVER -->
+
+                            <div
+                                x-show="accountOpen"
+                                x-cloak
+                                @click.outside="accountOpen = false"
+                                x-transition:enter="transition ease-out duration-150"
+                                x-transition:enter-start="opacity-0 translate-y-2 scale-[.97]"
+                                x-transition:enter-end="opacity-100 translate-y-0 scale-100"
+                                x-transition:leave="transition ease-in duration-100"
+                                x-transition:leave-start="opacity-100 scale-100"
+                                x-transition:leave-end="opacity-0 translate-y-1 scale-[.97]"
+                                class="absolute right-0 mt-3 w-[285px] overflow-hidden rounded-3xl border border-navvi-line bg-white p-2 shadow-navvi-lg"
+                            >
+
+                                <!-- Identity -->
+
+                                <div class="rounded-2xl bg-plum-50 p-4">
+
+                                    <div class="flex items-center gap-3">
+
+                                        <div
+                                            class="flex h-11 w-11 shrink-0 items-center justify-center rounded-2xl bg-plum-100 text-plum-700"
+                                        >
+                                            <i data-lucide="user-round" class="h-5 w-5"></i>
+                                        </div>
+
+                                        <div class="min-w-0">
+                                            <p class="truncate text-sm font-extrabold text-ink">
+                                                {{ request.user.get_full_name|default:request.user.username }}
+                                            </p>
+
+                                            <p class="mt-0.5 text-[10px] font-bold uppercase tracking-[.12em] text-plum-900/35">
+                                                {{ request.user.role }} account
+                                            </p>
+                                        </div>
+
+                                    </div>
+
+                                </div>
+
+
+                                <div class="my-2 h-px bg-navvi-line"></div>
+
+
+                                <!-- Mobile notifications -->
+
+                                <a
+                                    href="{{ url_notifications }}"
+                                    class="md:hidden flex items-center gap-3 rounded-2xl px-3 py-3 text-sm font-semibold text-plum-900/65 transition-colors hover:bg-plum-50 hover:text-plum-700"
+                                >
+                                    <span class="flex h-9 w-9 items-center justify-center rounded-xl bg-plum-50 text-plum-600">
+                                        <i data-lucide="bell" class="h-4 w-4"></i>
+                                    </span>
+
+                                    <span class="flex-1">
+                                        Notifications
+                                    </span>
+
+                                    <i data-lucide="chevron-right" class="h-4 w-4 opacity-30"></i>
+                                </a>
+
+
+                                <!-- Logout -->
+
+                                <form method="post" action="{% url 'logout' %}">
+                                    {% csrf_token %}
+
+                                    <button
+                                        type="submit"
+                                        class="w-full flex items-center gap-3 rounded-2xl px-3 py-3 text-left text-sm font-semibold text-plum-900/60 transition-colors hover:bg-rose-50 hover:text-rose-700"
+                                    >
+                                        <span class="flex h-9 w-9 items-center justify-center rounded-xl bg-rose-50">
+                                            <i data-lucide="log-out" class="h-4 w-4"></i>
+                                        </span>
+
+                                        <span class="flex-1">
+                                            Log out
+                                        </span>
+
+                                        <i data-lucide="arrow-up-right" class="h-4 w-4 opacity-30"></i>
+                                    </button>
+                                </form>
+
+                            </div>
+
+                        </div>
+
+                    </div>
+
+                {% else %}
+
+                    <!-- =================================================
+                         GUEST HEADER
+                    ================================================== -->
+
+                    <div class="flex items-center gap-1.5 sm:gap-3">
+
+                        <a
+                            href="{% url 'login' %}"
+                            class="rounded-xl px-3 py-2.5 text-sm font-bold text-plum-900/60 transition-colors hover:bg-plum-50 hover:text-plum-700"
+                        >
+                            Log in
+                        </a>
+
+                        <a
+                            href="{% url 'nurse_register' %}"
+                            class="group relative inline-flex items-center gap-2 overflow-hidden rounded-xl bg-ink px-4 py-2.5 text-sm font-extrabold text-white shadow-navvi-sm transition-all hover:-translate-y-0.5 hover:bg-plum-800"
+                        >
+
+                            <span class="relative z-10">
+                                Start earning
+                            </span>
+
+                            <i
+                                data-lucide="arrow-up-right"
+                                class="relative z-10 h-4 w-4 transition-transform group-hover:translate-x-0.5 group-hover:-translate-y-0.5"
+                            ></i>
+
+                        </a>
+
+                    </div>
+
+                {% endif %}
+
+            </div>
+
         </div>
+
     </header>
-    <main class="max-w-5xl mx-auto px-6 py-10">
+
+
+    <!-- =========================================================
+         MAIN
+    ========================================================== -->
+
+    <main class="flex-1 pb-[5.75rem] md:pb-0">
         {% block content %}{% endblock %}
     </main>
+
+
+    <!-- =========================================================
+         DESKTOP FOOTER
+    ========================================================== -->
+
+    <footer class="hidden md:block border-t border-navvi-line/80">
+
+        <div
+            class="max-w-7xl mx-auto flex items-center justify-between px-5 py-7 sm:px-6 lg:px-8"
+        >
+
+            <div class="flex items-center gap-2">
+
+                <span class="font-display text-sm font-extrabold tracking-[-.04em]">
+                    navvi
+                </span>
+
+                <span class="h-1 w-1 rounded-full bg-plum-600"></span>
+
+            </div>
+
+            <p class="text-[11px] font-semibold text-plum-900/30">
+                © 2026 Navvi. All rights reserved.
+            </p>
+
+        </div>
+
+    </footer>
+
+</div>
+
+
+{% if request.user.is_authenticated %}
+
+<!-- =========================================================
+     MOBILE NAVIGATION
+========================================================== -->
+
+<nav
+    class="fixed inset-x-0 bottom-0 z-50 border-t border-navvi-line bg-white/95 shadow-navvi-md backdrop-blur-2xl md:hidden"
+    style="padding-bottom: env(safe-area-inset-bottom, 0px);"
+>
+
+    {% if request.user.role == 'nurse' %}
+
+        <div class="grid h-[5.25rem] grid-cols-4 px-2">
+
+            <a
+                href="{{ url_jobs }}"
+                class="group relative flex flex-col items-center justify-center gap-1"
+            >
+
+                <span
+                    class="absolute top-0 h-0.5 w-8 rounded-full transition-all
+                    {% if request.path == url_jobs %}
+                        bg-plum-600 opacity-100
+                    {% else %}
+                        bg-transparent opacity-0
+                    {% endif %}"
+                ></span>
+
+                <span
+                    class="flex h-9 w-9 items-center justify-center rounded-xl transition-all
+                    {% if request.path == url_jobs %}
+                        bg-plum-100 text-plum-700
+                    {% else %}
+                        text-plum-900/35 group-hover:bg-plum-50
+                    {% endif %}"
+                >
+                    <i data-lucide="briefcase-business" class="h-[19px] w-[19px]"></i>
+                </span>
+
+                <span
+                    class="text-[10px] font-extrabold
+                    {% if request.path == url_jobs %}
+                        text-plum-700
+                    {% else %}
+                        text-plum-900/35
+                    {% endif %}"
+                >
+                    Jobs
+                </span>
+
+            </a>
+
+
+            <a
+                href="{{ url_wallet }}"
+                class="group relative flex flex-col items-center justify-center gap-1"
+            >
+
+                <span
+                    class="absolute top-0 h-0.5 w-8 rounded-full
+                    {% if request.path == url_wallet %}
+                        bg-plum-600
+                    {% else %}
+                        bg-transparent
+                    {% endif %}"
+                ></span>
+
+                <span
+                    class="flex h-9 w-9 items-center justify-center rounded-xl transition-all
+                    {% if request.path == url_wallet %}
+                        bg-plum-100 text-plum-700
+                    {% else %}
+                        text-plum-900/35 group-hover:bg-plum-50
+                    {% endif %}"
+                >
+                    <i data-lucide="wallet" class="h-[19px] w-[19px]"></i>
+                </span>
+
+                <span
+                    class="text-[10px] font-extrabold
+                    {% if request.path == url_wallet %}
+                        text-plum-700
+                    {% else %}
+                        text-plum-900/35
+                    {% endif %}"
+                >
+                    Wallet
+                </span>
+
+            </a>
+
+
+            <a
+                href="{{ url_verify }}"
+                class="group relative flex flex-col items-center justify-center gap-1"
+            >
+
+                <span
+                    class="absolute top-0 h-0.5 w-8 rounded-full
+                    {% if request.path == url_verify %}
+                        bg-plum-600
+                    {% else %}
+                        bg-transparent
+                    {% endif %}"
+                ></span>
+
+                <span
+                    class="flex h-9 w-9 items-center justify-center rounded-xl transition-all
+                    {% if request.path == url_verify %}
+                        bg-plum-100 text-plum-700
+                    {% else %}
+                        text-plum-900/35 group-hover:bg-plum-50
+                    {% endif %}"
+                >
+                    <i data-lucide="shield-check" class="h-[19px] w-[19px]"></i>
+                </span>
+
+                <span
+                    class="text-[10px] font-extrabold
+                    {% if request.path == url_verify %}
+                        text-plum-700
+                    {% else %}
+                        text-plum-900/35
+                    {% endif %}"
+                >
+                    Verify
+                </span>
+
+            </a>
+
+
+            <a
+                href="{{ url_notifications }}"
+                class="group relative flex flex-col items-center justify-center gap-1"
+            >
+
+                <span
+                    class="absolute top-0 h-0.5 w-8 rounded-full
+                    {% if request.path == url_notifications %}
+                        bg-plum-600
+                    {% else %}
+                        bg-transparent
+                    {% endif %}"
+                ></span>
+
+                <span
+                    class="relative flex h-9 w-9 items-center justify-center rounded-xl transition-all
+                    {% if request.path == url_notifications %}
+                        bg-plum-100 text-plum-700
+                    {% else %}
+                        text-plum-900/35 group-hover:bg-plum-50
+                    {% endif %}"
+                >
+                    <i data-lucide="bell" class="h-[19px] w-[19px]"></i>
+
+                    <span class="absolute right-1.5 top-1.5 h-1.5 w-1.5 rounded-full bg-plum-600"></span>
+                </span>
+
+                <span
+                    class="text-[10px] font-extrabold
+                    {% if request.path == url_notifications %}
+                        text-plum-700
+                    {% else %}
+                        text-plum-900/35
+                    {% endif %}"
+                >
+                    Alerts
+                </span>
+
+            </a>
+
+        </div>
+
+
+    {% elif request.user.role == 'patient' %}
+
+        <div class="grid h-[5.25rem] grid-cols-3 px-2">
+
+            <a
+                href="{{ url_bookings }}"
+                class="group relative flex flex-col items-center justify-center gap-1"
+            >
+
+                <span
+                    class="absolute top-0 h-0.5 w-8 rounded-full
+                    {% if request.path == url_bookings %}bg-plum-600{% else %}bg-transparent{% endif %}"
+                ></span>
+
+                <span
+                    class="flex h-9 w-9 items-center justify-center rounded-xl
+                    {% if request.path == url_bookings %}bg-plum-100 text-plum-700{% else %}text-plum-900/35 group-hover:bg-plum-50{% endif %}"
+                >
+                    <i data-lucide="calendar-days" class="h-[19px] w-[19px]"></i>
+                </span>
+
+                <span class="text-[10px] font-extrabold {% if request.path == url_bookings %}text-plum-700{% else %}text-plum-900/35{% endif %}">
+                    Bookings
+                </span>
+
+            </a>
+
+
+            <a
+                href="{{ url_book }}"
+                class="group relative flex flex-col items-center justify-center gap-1"
+            >
+
+                <span
+                    class="absolute top-0 h-0.5 w-8 rounded-full
+                    {% if request.path == url_book %}bg-plum-600{% else %}bg-transparent{% endif %}"
+                ></span>
+
+                <span
+                    class="flex h-10 w-10 items-center justify-center rounded-2xl bg-ink text-white shadow-navvi-sm transition-transform group-active:scale-95"
+                >
+                    <i data-lucide="plus" class="h-5 w-5"></i>
+                </span>
+
+                <span class="text-[10px] font-extrabold {% if request.path == url_book %}text-plum-700{% else %}text-plum-900/35{% endif %}">
+                    Book
+                </span>
+
+            </a>
+
+
+            <a
+                href="{{ url_notifications }}"
+                class="group relative flex flex-col items-center justify-center gap-1"
+            >
+
+                <span
+                    class="absolute top-0 h-0.5 w-8 rounded-full
+                    {% if request.path == url_notifications %}bg-plum-600{% else %}bg-transparent{% endif %}"
+                ></span>
+
+                <span
+                    class="relative flex h-9 w-9 items-center justify-center rounded-xl
+                    {% if request.path == url_notifications %}bg-plum-100 text-plum-700{% else %}text-plum-900/35 group-hover:bg-plum-50{% endif %}"
+                >
+                    <i data-lucide="bell" class="h-[19px] w-[19px]"></i>
+                    <span class="absolute right-1.5 top-1.5 h-1.5 w-1.5 rounded-full bg-plum-600"></span>
+                </span>
+
+                <span class="text-[10px] font-extrabold {% if request.path == url_notifications %}text-plum-700{% else %}text-plum-900/35{% endif %}">
+                    Alerts
+                </span>
+
+            </a>
+
+        </div>
+
+
+    {% elif request.user.role == 'admin' %}
+
+        <div class="grid h-[5.25rem] grid-cols-4 px-2">
+
+            <a
+                href="{{ url_dispatch }}"
+                class="group relative flex flex-col items-center justify-center gap-1"
+            >
+                <span class="absolute top-0 h-0.5 w-8 rounded-full {% if request.path == url_dispatch %}bg-plum-600{% else %}bg-transparent{% endif %}"></span>
+
+                <span class="flex h-9 w-9 items-center justify-center rounded-xl {% if request.path == url_dispatch %}bg-plum-100 text-plum-700{% else %}text-plum-900/35 group-hover:bg-plum-50{% endif %}">
+                    <i data-lucide="layout-dashboard" class="h-[19px] w-[19px]"></i>
+                </span>
+
+                <span class="text-[10px] font-extrabold {% if request.path == url_dispatch %}text-plum-700{% else %}text-plum-900/35{% endif %}">
+                    Dispatch
+                </span>
+            </a>
+
+
+            <a
+                href="{{ url_queue }}"
+                class="group relative flex flex-col items-center justify-center gap-1"
+            >
+                <span class="absolute top-0 h-0.5 w-8 rounded-full {% if request.path == url_queue %}bg-plum-600{% else %}bg-transparent{% endif %}"></span>
+
+                <span class="flex h-9 w-9 items-center justify-center rounded-xl {% if request.path == url_queue %}bg-plum-100 text-plum-700{% else %}text-plum-900/35 group-hover:bg-plum-50{% endif %}">
+                    <i data-lucide="list-checks" class="h-[19px] w-[19px]"></i>
+                </span>
+
+                <span class="text-[10px] font-extrabold {% if request.path == url_queue %}text-plum-700{% else %}text-plum-900/35{% endif %}">
+                    Queue
+                </span>
+            </a>
+
+
+            <a
+                href="{{ url_disputes }}"
+                class="group relative flex flex-col items-center justify-center gap-1"
+            >
+                <span class="absolute top-0 h-0.5 w-8 rounded-full {% if request.path == url_disputes %}bg-plum-600{% else %}bg-transparent{% endif %}"></span>
+
+                <span class="flex h-9 w-9 items-center justify-center rounded-xl {% if request.path == url_disputes %}bg-plum-100 text-plum-700{% else %}text-plum-900/35 group-hover:bg-plum-50{% endif %}">
+                    <i data-lucide="flag" class="h-[19px] w-[19px]"></i>
+                </span>
+
+                <span class="text-[10px] font-extrabold {% if request.path == url_disputes %}text-plum-700{% else %}text-plum-900/35{% endif %}">
+                    Disputes
+                </span>
+            </a>
+
+
+            <a
+                href="{{ url_notifications }}"
+                class="group relative flex flex-col items-center justify-center gap-1"
+            >
+                <span class="absolute top-0 h-0.5 w-8 rounded-full {% if request.path == url_notifications %}bg-plum-600{% else %}bg-transparent{% endif %}"></span>
+
+                <span class="relative flex h-9 w-9 items-center justify-center rounded-xl {% if request.path == url_notifications %}bg-plum-100 text-plum-700{% else %}text-plum-900/35 group-hover:bg-plum-50{% endif %}">
+                    <i data-lucide="bell" class="h-[19px] w-[19px]"></i>
+                    <span class="absolute right-1.5 top-1.5 h-1.5 w-1.5 rounded-full bg-plum-600"></span>
+                </span>
+
+                <span class="text-[10px] font-extrabold {% if request.path == url_notifications %}text-plum-700{% else %}text-plum-900/35{% endif %}">
+                    Alerts
+                </span>
+            </a>
+
+        </div>
+
+
+    {% elif request.user.role == 'partner' %}
+
+        <div class="grid h-[5.25rem] grid-cols-2 px-2">
+
+            <a
+                href="{{ url_referrals }}"
+                class="group relative flex flex-col items-center justify-center gap-1"
+            >
+                <span class="absolute top-0 h-0.5 w-8 rounded-full {% if request.path == url_referrals %}bg-plum-600{% else %}bg-transparent{% endif %}"></span>
+
+                <span class="flex h-9 w-9 items-center justify-center rounded-xl {% if request.path == url_referrals %}bg-plum-100 text-plum-700{% else %}text-plum-900/35 group-hover:bg-plum-50{% endif %}">
+                    <i data-lucide="heart-pulse" class="h-[19px] w-[19px]"></i>
+                </span>
+
+                <span class="text-[10px] font-extrabold {% if request.path == url_referrals %}text-plum-700{% else %}text-plum-900/35{% endif %}">
+                    Referrals
+                </span>
+            </a>
+
+
+            <a
+                href="{{ url_notifications }}"
+                class="group relative flex flex-col items-center justify-center gap-1"
+            >
+                <span class="absolute top-0 h-0.5 w-8 rounded-full {% if request.path == url_notifications %}bg-plum-600{% else %}bg-transparent{% endif %}"></span>
+
+                <span class="relative flex h-9 w-9 items-center justify-center rounded-xl {% if request.path == url_notifications %}bg-plum-100 text-plum-700{% else %}text-plum-900/35 group-hover:bg-plum-50{% endif %}">
+                    <i data-lucide="bell" class="h-[19px] w-[19px]"></i>
+                    <span class="absolute right-1.5 top-1.5 h-1.5 w-1.5 rounded-full bg-plum-600"></span>
+                </span>
+
+                <span class="text-[10px] font-extrabold {% if request.path == url_notifications %}text-plum-700{% else %}text-plum-900/35{% endif %}">
+                    Alerts
+                </span>
+            </a>
+
+        </div>
+
+    {% endif %}
+
+</nav>
+
+{% endif %}
+
+
+<!-- =========================================================
+     TOAST STACK
+========================================================== -->
+
+<div
+    x-data="toastStack()"
+    @toast.window="push($event.detail)"
+    class="pointer-events-none fixed inset-x-0 z-[100] flex flex-col items-center gap-2 px-4 sm:right-5 sm:inset-x-auto sm:items-end"
+    :class="'{% if request.user.is_authenticated %}bottom-24 md:bottom-5{% else %}bottom-5{% endif %}'"
+>
+
+    <template x-for="t in toasts" :key="t.id">
+
+        <div
+            x-transition:enter="transition ease-out duration-200"
+            x-transition:enter-start="opacity-0 translate-y-3 scale-95"
+            x-transition:enter-end="opacity-100 translate-y-0 scale-100"
+            x-transition:leave="transition ease-in duration-150"
+            x-transition:leave-start="opacity-100 scale-100"
+            x-transition:leave-end="opacity-0 scale-95"
+            class="pointer-events-auto flex w-full max-w-sm items-center gap-3 rounded-2xl border bg-white px-4 py-3.5 shadow-navvi-lg"
+            :class="t.type === 'error' ? 'border-rose-200' : 'border-navvi-line'"
+        >
+
+            <span
+                class="flex h-8 w-8 shrink-0 items-center justify-center rounded-xl"
+                :class="t.type === 'error' ? 'bg-rose-50 text-rose-600' : 'bg-plum-50 text-plum-600'"
+            >
+                <i
+                    :data-lucide="t.type === 'error' ? 'circle-alert' : 'check'"
+                    class="h-4 w-4"
+                ></i>
+            </span>
+
+            <span
+                class="flex-1 text-sm font-bold text-ink"
+                x-text="t.message"
+            ></span>
+
+        </div>
+
+    </template>
+
+</div>
+
+
+{% if request.user.is_authenticated %}
+
+<!-- =========================================================
+     PLATFORM PULSE
+========================================================== -->
+
+<div
+    x-data="platformPulse()"
+    x-init="start()"
+    x-show="visible"
+    x-cloak
+    class="fixed bottom-6 left-6 z-40 hidden max-w-[330px] md:block"
+>
+
+    <div
+        class="group flex items-center gap-3 rounded-2xl border border-navvi-line bg-white/95 p-3 shadow-navvi-md backdrop-blur-xl transition-all hover:-translate-y-1"
+    >
+
+        <div
+            class="relative flex h-9 w-9 shrink-0 items-center justify-center rounded-xl bg-plum-50 text-plum-600"
+        >
+
+            <span
+                class="absolute inset-0 animate-ping rounded-xl bg-plum-200/40"
+            ></span>
+
+            <i data-lucide="activity" class="relative h-4 w-4"></i>
+
+        </div>
+
+
+        <div class="min-w-0 flex-1">
+
+            <div class="flex items-center gap-1.5">
+
+                <span class="text-[9px] font-extrabold uppercase tracking-[.15em] text-plum-600">
+                    Live platform
+                </span>
+
+                <span class="h-1 w-1 animate-navvi-pulse rounded-full bg-emerald-500"></span>
+
+            </div>
+
+            <template x-for="event in [current]" :key="event.key">
+
+                <p
+                    class="mt-0.5 truncate text-xs font-semibold text-plum-900/60"
+                    x-text="event.text"
+                ></p>
+
+            </template>
+
+        </div>
+
+
+        <button
+            @click="visible = false"
+            class="flex h-7 w-7 shrink-0 items-center justify-center rounded-lg text-plum-900/25 transition-colors hover:bg-plum-50 hover:text-plum-900/60"
+            aria-label="Dismiss"
+        >
+            <i data-lucide="x" class="h-3.5 w-3.5"></i>
+        </button>
+
+    </div>
+
+</div>
+
+{% endif %}
+
+
+<!-- =========================================================
+     JAVASCRIPT
+========================================================== -->
+
+<script>
+
+    // ---------------------------------------------------------
+    // Lucide
+    // ---------------------------------------------------------
+
+    function refreshIcons() {
+        if (window.lucide) {
+            lucide.createIcons();
+        }
+    }
+
+    document.addEventListener('DOMContentLoaded', refreshIcons);
+
+    document.addEventListener('alpine:init', () => {
+
+        // -----------------------------------------------------
+        // TOAST SYSTEM
+        // -----------------------------------------------------
+
+        Alpine.data('toastStack', () => ({
+            toasts: [],
+
+            push(detail) {
+
+                const id =
+                    Date.now() + Math.random();
+
+                this.toasts.push({
+                    id,
+                    message: detail.message,
+                    type: detail.type || 'success'
+                });
+
+                setTimeout(() => {
+
+                    this.toasts =
+                        this.toasts.filter(
+                            t => t.id !== id
+                        );
+
+                }, 4000);
+
+                setTimeout(refreshIcons, 20);
+            }
+        }));
+
+
+        // -----------------------------------------------------
+        // PLATFORM PULSE
+        // -----------------------------------------------------
+
+        Alpine.data('platformPulse', () => ({
+
+            visible: true,
+
+            events: [
+                'Antenatal visit claimed in Lekki Phase 1',
+                '₦3,800 released to a nurse in Ikeja',
+                'New booking confirmed in Surulere',
+                'Nurse verified in under 6 hours',
+                'Wound dressing visit completed in Yaba',
+                'Milestone 2 released for a long-term case',
+            ],
+
+            index: 0,
+
+            get current() {
+                return {
+                    key: this.index,
+                    text: this.events[this.index]
+                };
+            },
+
+            start() {
+
+                setInterval(() => {
+
+                    this.index =
+                        (this.index + 1) %
+                        this.events.length;
+
+                }, 4500);
+
+            }
+
+        }));
+
+    });
+
+
+    // ---------------------------------------------------------
+    // GLOBAL TOAST
+    // ---------------------------------------------------------
+
+    function toast(message, type = 'success') {
+
+        window.dispatchEvent(
+            new CustomEvent('toast', {
+                detail: {
+                    message,
+                    type
+                }
+            })
+        );
+
+    }
+
+
+    // ---------------------------------------------------------
+    // COUNT-UP NUMBERS
+    // ---------------------------------------------------------
+
+    function initCountUps() {
+
+        const els =
+            document.querySelectorAll(
+                '[data-countup]'
+            );
+
+        if (!els.length) return;
+
+        const animate = (el) => {
+
+            const target =
+                parseFloat(
+                    el.dataset.target || '0'
+                );
+
+            const suffix =
+                el.dataset.suffix || '';
+
+            const prefix =
+                el.dataset.prefix || '';
+
+            const decimals =
+                parseInt(
+                    el.dataset.decimals || '0',
+                    10
+                );
+
+            const duration = 1400;
+            const start = performance.now();
+
+            function step(now) {
+
+                const progress =
+                    Math.min(
+                        (now - start) /
+                        duration,
+                        1
+                    );
+
+                const eased =
+                    1 -
+                    Math.pow(
+                        1 - progress,
+                        3
+                    );
+
+                const value =
+                    target * eased;
+
+                el.textContent =
+                    prefix +
+                    value.toLocaleString(
+                        'en-NG',
+                        {
+                            minimumFractionDigits:
+                                decimals,
+
+                            maximumFractionDigits:
+                                decimals
+                        }
+                    ) +
+                    suffix;
+
+                if (progress < 1) {
+                    requestAnimationFrame(step);
+                }
+
+            }
+
+            requestAnimationFrame(step);
+
+        };
+
+
+        const io =
+            new IntersectionObserver(
+                entries => {
+
+                    entries.forEach(entry => {
+
+                        if (
+                            entry.isIntersecting
+                        ) {
+
+                            animate(entry.target);
+
+                            io.unobserve(
+                                entry.target
+                            );
+
+                        }
+
+                    });
+
+                },
+                {
+                    threshold: 0.4
+                }
+            );
+
+
+        els.forEach(el => io.observe(el));
+
+    }
+
+
+    // ---------------------------------------------------------
+    // SCROLL REVEAL
+    // Uses Tailwind utility classes rather than custom CSS.
+    // ---------------------------------------------------------
+
+    function initReveal() {
+
+        const els =
+            document.querySelectorAll(
+                '[data-reveal]'
+            );
+
+        if (!els.length) return;
+
+        els.forEach(el => {
+
+            el.classList.add(
+                'opacity-0',
+                'translate-y-5',
+                'transition-all',
+                'duration-700',
+                'ease-out'
+            );
+
+        });
+
+
+        const io =
+            new IntersectionObserver(
+                entries => {
+
+                    entries.forEach(entry => {
+
+                        if (
+                            entry.isIntersecting
+                        ) {
+
+                            entry.target.classList.remove(
+                                'opacity-0',
+                                'translate-y-5'
+                            );
+
+                            entry.target.classList.add(
+                                'opacity-100',
+                                'translate-y-0'
+                            );
+
+                            io.unobserve(
+                                entry.target
+                            );
+
+                        }
+
+                    });
+
+                },
+                {
+                    threshold: 0.15
+                }
+            );
+
+
+        els.forEach(el => io.observe(el));
+
+    }
+
+
+    // ---------------------------------------------------------
+    // CONFETTI
+    // ---------------------------------------------------------
+
+    function confettiBurst(originEl) {
+
+        const colors = [
+            '#6E55B0',
+            '#8F79C3',
+            '#AD9BD4',
+            '#463477'
+        ];
+
+        const rect =
+            originEl
+                ? originEl.getBoundingClientRect()
+                : {
+                    left: window.innerWidth / 2,
+                    top: window.innerHeight / 2,
+                    width: 0,
+                    height: 0
+                };
+
+        const originX =
+            rect.left +
+            rect.width / 2;
+
+        const originY =
+            rect.top +
+            rect.height / 2;
+
+
+        for (let i = 0; i < 28; i++) {
+
+            const piece =
+                document.createElement('span');
+
+            piece.className =
+                'fixed z-[9999] pointer-events-none h-2 w-2 rounded-sm';
+
+            piece.style.left =
+                originX + 'px';
+
+            piece.style.top =
+                originY + 'px';
+
+            piece.style.background =
+                colors[i % colors.length];
+
+            document.body.appendChild(piece);
+
+
+            const angle =
+                Math.random() *
+                Math.PI *
+                2;
+
+            const distance =
+                80 +
+                Math.random() *
+                140;
+
+            const dx =
+                Math.cos(angle) *
+                distance;
+
+            const dy =
+                Math.sin(angle) *
+                distance -
+                60;
+
+            const rotation =
+                Math.random() *
+                720 -
+                360;
+
+
+            piece.animate(
+                [
+                    {
+                        transform:
+                            'translate(0,0) rotate(0deg)',
+                        opacity: 1
+                    },
+
+                    {
+                        transform:
+                            `translate(${dx}px,${dy}px) rotate(${rotation}deg)`,
+                        opacity: 0
+                    }
+                ],
+                {
+                    duration:
+                        900 +
+                        Math.random() *
+                        400,
+
+                    easing:
+                        'cubic-bezier(.2,.7,.2,1)'
+                }
+            );
+
+
+            setTimeout(
+                () => piece.remove(),
+                1400
+            );
+
+        }
+
+    }
+
+
+    // ---------------------------------------------------------
+    // SHARED FETCH
+    // ---------------------------------------------------------
+
+    function navviFetch(url, opts = {}) {
+
+        const token =
+            document.querySelector(
+                'meta[name="csrf-token"]'
+            ).content;
+
+        return fetch(
+            url,
+            {
+                ...opts,
+
+                headers: {
+                    ...(opts.headers || {}),
+                    'X-CSRFToken': token
+                }
+            }
+        );
+
+    }
+
+
+    // ---------------------------------------------------------
+    // INITIALIZATION
+    // ---------------------------------------------------------
+
+    document.addEventListener(
+        'DOMContentLoaded',
+        () => {
+
+            initCountUps();
+            initReveal();
+            refreshIcons();
+
+        }
+    );
+
+</script>
+
+{% block extra_scripts %}{% endblock %}
+
+
 </body>
 </html>

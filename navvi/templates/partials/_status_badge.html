@@ -1,0 +1,21 @@
+{% comment %}
+Usage: {% include "partials/_status_badge.html" with status=care_request.status label=care_request.get_status_display %}
+`label` is optional — falls back to a title-cased version of `status`.
+{% endcomment %}
+{% if status == "verified" or status == "paid" or status == "successful" or status == "completed" or status == "released" or status == "accepted" or status == "resolved" or status == "delivered" or status == "sent" %}
+  <span class="inline-flex items-center gap-1.5 text-xs font-semibold text-[#1B7A4C] bg-[#E9F7EF] px-2.5 py-1 rounded-full">
+    <span class="w-1.5 h-1.5 rounded-full bg-[#1B7A4C]"></span>{{ label|default:status|title }}
+  </span>
+{% elif status == "rejected" or status == "suspended" or status == "failed" or status == "cancelled" or status == "dismissed" or status == "refunded" or status == "payout_failure" %}
+  <span class="inline-flex items-center gap-1.5 text-xs font-semibold text-[#B33A50] bg-[#FDF0F2] px-2.5 py-1 rounded-full">
+    <span class="w-1.5 h-1.5 rounded-full bg-[#B33A50]"></span>{{ label|default:status|title }}
+  </span>
+{% elif status == "pending" or status == "offered" or status == "created" or status == "awaiting_payment" or status == "queued" or status == "under_review" or status == "open" %}
+  <span class="inline-flex items-center gap-1.5 text-xs font-semibold text-[#9A6B12] bg-[#FDF3DC] px-2.5 py-1 rounded-full">
+    <span class="w-1.5 h-1.5 rounded-full bg-[#9A6B12]"></span>{{ label|default:status|title }}
+  </span>
+{% else %}
+  <span class="inline-flex items-center gap-1.5 text-xs font-semibold text-plum-700 bg-plum-50 px-2.5 py-1 rounded-full">
+    <span class="w-1.5 h-1.5 rounded-full bg-plum-600"></span>{{ label|default:status|title }}
+  </span>
+{% endif %}

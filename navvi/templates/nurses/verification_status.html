@@ -1,0 +1,612 @@
+{% extends "base.html" %}
+{% block title %}Verification status — Navvi{% endblock %}
+
+{% block content %}
+{% url 'nurse_document_upload' as doc_upload_url %}
+
+<div class="relative min-h-[calc(100dvh-4rem)] overflow-hidden">
+
+  <!-- Ambient background -->
+  <div class="pointer-events-none absolute inset-0 -z-10 overflow-hidden">
+    <div class="absolute -right-32 -top-40 h-[30rem] w-[30rem] rounded-full bg-plum-200/25 blur-3xl"></div>
+    <div class="absolute -left-48 top-[32%] h-[28rem] w-[28rem] rounded-full bg-purple-100/30 blur-3xl"></div>
+    <div class="absolute bottom-[-12rem] right-[18%] h-96 w-96 rounded-full bg-plum-100/30 blur-3xl"></div>
+  </div>
+
+  <div class="mx-auto max-w-5xl px-4 py-6 sm:px-6 sm:py-10 lg:px-8">
+
+    <!-- ========================================================= -->
+    <!-- HEADER -->
+    <!-- ========================================================= -->
+
+    <section
+      class="relative mb-6 overflow-hidden rounded-[2rem] border border-plum-100/80 bg-white/75 p-5 shadow-[0_24px_80px_rgba(36,27,61,0.07)] backdrop-blur-xl sm:p-7"
+      data-reveal
+    >
+
+      <!-- Decorative rings -->
+      <div class="pointer-events-none absolute -right-16 -top-24 h-60 w-60 rounded-full border-[20px] border-plum-100/40"></div>
+      <div class="pointer-events-none absolute right-12 top-12 h-3 w-3 rounded-full bg-plum-400/50"></div>
+      <div class="pointer-events-none absolute right-20 top-24 h-1.5 w-1.5 rounded-full bg-plum-600/40"></div>
+
+      <div class="relative flex flex-col gap-5 sm:flex-row sm:items-center sm:justify-between">
+
+        <div>
+          <div class="mb-3 flex items-center gap-2">
+
+            <span class="flex h-8 w-8 items-center justify-center rounded-xl bg-plum-100 text-plum-700">
+              <i data-lucide="badge-check" class="h-4 w-4"></i>
+            </span>
+
+            <span class="text-[10px] font-bold uppercase tracking-[0.22em] text-plum-600/75">
+              Account verification
+            </span>
+
+            <span class="h-1 w-1 rounded-full bg-plum-300"></span>
+
+            <span class="flex items-center gap-1.5 text-[10px] font-medium text-plum-900/40">
+              <span class="h-1.5 w-1.5 rounded-full bg-plum-500"></span>
+              Secure review
+            </span>
+
+          </div>
+
+          <h1 class="font-display text-2xl font-bold tracking-[-0.045em] text-ink sm:text-3xl">
+            Verification status
+          </h1>
+
+          <p class="mt-1.5 max-w-xl text-xs leading-5 text-plum-900/45 sm:text-sm">
+            Keep your professional credentials up to date and track your verification progress.
+          </p>
+        </div>
+
+        <div class="flex items-center gap-2 self-start sm:self-auto">
+
+          <div class="rounded-2xl border border-plum-100 bg-plum-50/70 px-3.5 py-2.5">
+            <p class="text-[8px] font-bold uppercase tracking-[0.18em] text-plum-900/30">
+              Provider
+            </p>
+
+            <p class="mt-0.5 text-[10px] font-semibold text-plum-800">
+              NMCN
+            </p>
+          </div>
+
+          <div class="flex h-10 w-10 items-center justify-center rounded-2xl border border-plum-100 bg-white text-plum-600 shadow-sm">
+            <i data-lucide="shield-check" class="h-4 w-4"></i>
+          </div>
+
+        </div>
+
+      </div>
+    </section>
+
+
+    <!-- ========================================================= -->
+    <!-- VERIFICATION HERO -->
+    <!-- ========================================================= -->
+
+    <section
+      class="relative mb-6 overflow-hidden rounded-[2.2rem] border border-plum-100/80 bg-white/80 shadow-[0_28px_90px_rgba(36,27,61,0.075)] backdrop-blur-xl"
+      data-reveal
+    >
+
+      <!-- Top accent -->
+      <div class="absolute inset-x-0 top-0 h-1 bg-gradient-to-r from-plum-300 via-plum-600 to-plum-300"></div>
+
+      <!-- Background geometry -->
+      <div class="pointer-events-none absolute -right-24 top-[-8rem] h-80 w-80 rounded-full bg-plum-100/35 blur-3xl"></div>
+
+      <div class="relative p-5 sm:p-7 lg:p-8">
+
+        <!-- Identity row -->
+        <div class="flex flex-col gap-5 sm:flex-row sm:items-center sm:justify-between">
+
+          <div class="flex min-w-0 items-center gap-4">
+
+            <!-- Avatar -->
+            <div class="relative shrink-0">
+
+              <div class="flex h-14 w-14 items-center justify-center rounded-[1.25rem] bg-gradient-to-br from-plum-100 to-plum-50 text-plum-700 ring-1 ring-plum-200/70 shadow-sm sm:h-16 sm:w-16">
+                <i data-lucide="user-round" class="h-6 w-6 sm:h-7 sm:w-7"></i>
+              </div>
+
+              {% if nurse.verification_status == "verified" %}
+                <span class="absolute -bottom-1 -right-1 flex h-6 w-6 items-center justify-center rounded-lg bg-emerald-500 text-white ring-4 ring-white">
+                  <i data-lucide="check" class="h-3.5 w-3.5"></i>
+                </span>
+              {% elif nurse.verification_status == "pending" %}
+                <span class="absolute -bottom-1 -right-1 flex h-6 w-6 items-center justify-center rounded-lg bg-amber-500 text-white ring-4 ring-white">
+                  <i data-lucide="clock-3" class="h-3 w-3"></i>
+                </span>
+              {% else %}
+                <span class="absolute -bottom-1 -right-1 flex h-6 w-6 items-center justify-center rounded-lg bg-rose-500 text-white ring-4 ring-white">
+                  <i data-lucide="alert-circle" class="h-3 w-3"></i>
+                </span>
+              {% endif %}
+
+            </div>
+
+            <div class="min-w-0">
+
+              <p class="text-[9px] font-bold uppercase tracking-[0.2em] text-plum-900/30">
+                Professional profile
+              </p>
+
+              <h2 class="mt-1 truncate font-display text-lg font-bold tracking-tight text-plum-900 sm:text-xl">
+                {{ nurse.user.get_full_name }}
+              </h2>
+
+              <div class="mt-1.5 flex flex-wrap items-center gap-2">
+
+                <span class="rounded-full bg-plum-50 px-2.5 py-1 font-mono text-[9px] font-semibold text-plum-600">
+                  NMCN {{ nurse.nmcn_registration_number }}
+                </span>
+
+                <span class="h-1 w-1 rounded-full bg-plum-300"></span>
+
+                <span class="text-[9px] font-medium text-plum-900/35">
+                  Credential profile
+                </span>
+
+              </div>
+
+            </div>
+
+          </div>
+
+          <div class="self-start sm:self-auto">
+            {% include "partials/_status_badge.html" with status=nurse.verification_status label=nurse.get_verification_status_display %}
+          </div>
+
+        </div>
+
+
+        <!-- Status-specific content -->
+        {% if nurse.verification_status == "pending" %}
+
+          <div class="mt-7 overflow-hidden rounded-[1.5rem] border border-amber-100 bg-gradient-to-br from-amber-50/90 to-white/80">
+
+            <div class="flex items-start gap-4 p-4 sm:p-5">
+
+              <div class="flex h-11 w-11 shrink-0 items-center justify-center rounded-2xl bg-amber-100 text-amber-600">
+                <i data-lucide="hourglass" class="h-5 w-5"></i>
+              </div>
+
+              <div class="min-w-0">
+
+                <div class="flex flex-wrap items-center gap-2">
+
+                  <p class="text-sm font-bold text-amber-900">
+                    Verification in progress
+                  </p>
+
+                  <span class="rounded-full bg-amber-100 px-2 py-0.5 text-[8px] font-bold uppercase tracking-wide text-amber-700">
+                    Under review
+                  </span>
+
+                </div>
+
+                <p class="mt-1.5 text-xs leading-5 text-amber-900/65">
+                  Your documents are with our verification team. This usually clears within 48 hours — we'll notify you the moment it's done.
+                </p>
+
+              </div>
+
+            </div>
+
+            <!-- Progress visualization -->
+            <div class="border-t border-amber-100 px-4 py-4 sm:px-5">
+
+              <div class="flex items-center justify-between text-[8px] font-bold uppercase tracking-[0.15em]">
+
+                <span class="text-plum-900/35">
+                  Review progress
+                </span>
+
+                <span class="text-amber-700">
+                  In progress
+                </span>
+
+              </div>
+
+              <div class="mt-2 flex gap-1.5">
+
+                <span class="h-1.5 flex-1 rounded-full bg-plum-600"></span>
+                <span class="h-1.5 flex-1 rounded-full bg-amber-400"></span>
+                <span class="h-1.5 flex-1 rounded-full bg-plum-100"></span>
+                <span class="h-1.5 flex-1 rounded-full bg-plum-100"></span>
+
+              </div>
+
+            </div>
+
+          </div>
+
+        {% elif nurse.verification_status == "verified" %}
+
+          <div class="mt-7 overflow-hidden rounded-[1.5rem] border border-emerald-100 bg-gradient-to-br from-emerald-50/90 to-white/80">
+
+            <div class="flex flex-col gap-4 p-4 sm:flex-row sm:items-center sm:justify-between sm:p-5">
+
+              <div class="flex items-start gap-4">
+
+                <div class="flex h-11 w-11 shrink-0 items-center justify-center rounded-2xl bg-emerald-500 text-white shadow-lg shadow-emerald-500/20">
+                  <i data-lucide="badge-check" class="h-5 w-5"></i>
+                </div>
+
+                <div>
+                  <div class="flex items-center gap-2">
+
+                    <p class="text-sm font-bold text-emerald-900">
+                      You're verified
+                    </p>
+
+                    <span class="flex items-center gap-1 rounded-full bg-emerald-100 px-2 py-0.5 text-[8px] font-bold text-emerald-700">
+                      <span class="h-1 w-1 rounded-full bg-emerald-500"></span>
+                      Active
+                    </span>
+
+                  </div>
+
+                  <p class="mt-1 text-xs leading-5 text-emerald-900/60">
+                    Your professional profile has been verified and you can claim available jobs.
+                  </p>
+                </div>
+
+              </div>
+
+              <a
+                href="{% url 'available_jobs' %}"
+                class="inline-flex shrink-0 items-center justify-center gap-2 rounded-xl bg-plum-800 px-4 py-3 text-[10px] font-bold text-white shadow-lg shadow-plum-800/15 transition-all hover:-translate-y-0.5 hover:bg-plum-700 active:scale-[0.98]"
+              >
+                Browse jobs
+                <i data-lucide="arrow-up-right" class="h-3.5 w-3.5"></i>
+              </a>
+
+            </div>
+
+          </div>
+
+        {% elif nurse.verification_status == "rejected" %}
+
+          <div class="mt-7 overflow-hidden rounded-[1.5rem] border border-rose-100 bg-gradient-to-br from-rose-50/90 to-white/80">
+
+            <div class="flex items-start gap-4 p-4 sm:p-5">
+
+              <div class="flex h-11 w-11 shrink-0 items-center justify-center rounded-2xl bg-rose-100 text-rose-600">
+                <i data-lucide="file-warning" class="h-5 w-5"></i>
+              </div>
+
+              <div class="min-w-0">
+
+                <p class="text-sm font-bold text-rose-900">
+                  Application not approved
+                </p>
+
+                {% if nurse.suspension_reason %}
+                  <p class="mt-1.5 text-xs leading-5 text-rose-900/65">
+                    {{ nurse.suspension_reason }}
+                  </p>
+                {% endif %}
+
+              </div>
+
+            </div>
+
+          </div>
+
+        {% elif nurse.verification_status == "suspended" %}
+
+          <div class="mt-7 overflow-hidden rounded-[1.5rem] border border-rose-100 bg-gradient-to-br from-rose-50/90 to-white/80">
+
+            <div class="flex items-start gap-4 p-4 sm:p-5">
+
+              <div class="flex h-11 w-11 shrink-0 items-center justify-center rounded-2xl bg-rose-100 text-rose-600">
+                <i data-lucide="shield-alert" class="h-5 w-5"></i>
+              </div>
+
+              <div class="min-w-0">
+
+                <p class="text-sm font-bold text-rose-900">
+                  Account suspended
+                </p>
+
+                {% if nurse.suspension_reason %}
+                  <p class="mt-1.5 text-xs leading-5 text-rose-900/65">
+                    {{ nurse.suspension_reason }}
+                  </p>
+                {% endif %}
+
+              </div>
+
+            </div>
+
+          </div>
+
+        {% endif %}
+
+      </div>
+
+    </section>
+
+
+    <!-- ========================================================= -->
+    <!-- DOCUMENTS -->
+    <!-- ========================================================= -->
+
+    <section class="mb-7" data-reveal>
+
+      <div class="mb-4 flex items-end justify-between gap-4">
+
+        <div>
+          <div class="flex items-center gap-2">
+
+            <span class="h-1.5 w-1.5 rounded-full bg-plum-500"></span>
+
+            <p class="text-[9px] font-bold uppercase tracking-[0.2em] text-plum-900/30">
+              Credentials
+            </p>
+
+          </div>
+
+          <h2 class="mt-1.5 font-display text-xl font-bold tracking-tight text-plum-900">
+            Your documents
+          </h2>
+
+          <p class="mt-1 text-[10px] text-plum-900/35">
+            Documents submitted for professional verification.
+          </p>
+        </div>
+
+        <a
+          href="{% url 'nurse_document_upload' %}"
+          class="group inline-flex shrink-0 items-center gap-2 rounded-xl bg-plum-800 px-3.5 py-2.5 text-[10px] font-bold text-white shadow-md shadow-plum-800/15 transition-all hover:-translate-y-0.5 hover:bg-plum-700"
+        >
+          <i data-lucide="plus" class="h-3.5 w-3.5"></i>
+          <span class="hidden sm:inline">Upload document</span>
+          <span class="sm:hidden">Upload</span>
+        </a>
+
+      </div>
+
+
+      {% if nurse.documents.all %}
+
+        <div class="grid gap-3 sm:grid-cols-2">
+
+          {% for doc in nurse.documents.all %}
+
+            <article
+              class="group relative overflow-hidden rounded-[1.5rem] border border-plum-100/80 bg-white/75 p-4 shadow-[0_12px_45px_rgba(36,27,61,0.045)] backdrop-blur-xl transition-all duration-300 hover:-translate-y-0.5 hover:border-plum-200 hover:shadow-[0_18px_55px_rgba(36,27,61,0.075)]"
+            >
+
+              <div class="absolute inset-x-0 top-0 h-0.5 bg-gradient-to-r from-transparent via-plum-300 to-transparent opacity-0 transition-opacity group-hover:opacity-100"></div>
+
+              <div class="flex items-start justify-between gap-4">
+
+                <div class="flex min-w-0 items-center gap-3">
+
+                  <div class="flex h-11 w-11 shrink-0 items-center justify-center rounded-2xl bg-plum-50 text-plum-600 ring-1 ring-plum-100">
+                    <i data-lucide="file-text" class="h-5 w-5"></i>
+                  </div>
+
+                  <div class="min-w-0">
+
+                    <p class="truncate text-sm font-bold text-plum-900">
+                      {{ doc.get_document_type_display }}
+                    </p>
+
+                    <div class="mt-1 flex items-center gap-1.5">
+
+                      <span class="h-1 w-1 rounded-full bg-plum-300"></span>
+
+                      <p class="text-[9px] text-plum-900/40">
+                        Uploaded {{ doc.uploaded_at|date:"d M Y" }}
+                      </p>
+
+                    </div>
+
+                  </div>
+
+                </div>
+
+                <a
+                  href="{{ doc.file.url }}"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  class="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl border border-plum-100 bg-white text-plum-600 transition-all hover:border-plum-200 hover:bg-plum-50"
+                  aria-label="View document"
+                >
+                  <i data-lucide="external-link" class="h-3.5 w-3.5"></i>
+                </a>
+
+              </div>
+
+
+              <div class="mt-4 flex items-center justify-between border-t border-plum-100/70 pt-3">
+
+                <div class="flex items-center gap-1.5">
+                  <i data-lucide="shield-check" class="h-3 w-3 text-plum-400"></i>
+
+                  <span class="text-[8px] font-bold uppercase tracking-[0.15em] text-plum-900/30">
+                    Submitted
+                  </span>
+                </div>
+
+                <a
+                  href="{{ doc.file.url }}"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  class="text-[9px] font-bold text-plum-600 transition-colors hover:text-plum-800"
+                >
+                  View document
+                </a>
+
+              </div>
+
+            </article>
+
+          {% endfor %}
+
+        </div>
+
+      {% else %}
+
+        <div class="rounded-[1.8rem] border border-dashed border-plum-200 bg-white/60 p-2 backdrop-blur-xl">
+
+          <div class="rounded-[1.5rem] bg-plum-50/45 p-7 text-center sm:p-10">
+
+            <div class="mx-auto flex h-14 w-14 items-center justify-center rounded-2xl bg-white text-plum-500 shadow-sm ring-1 ring-plum-100">
+              <i data-lucide="file-plus-2" class="h-6 w-6"></i>
+            </div>
+
+            <h3 class="mt-5 font-display text-base font-bold text-plum-900">
+              No documents yet
+            </h3>
+
+            <p class="mx-auto mt-1.5 max-w-sm text-xs leading-5 text-plum-900/40">
+              Upload your NMCN license and government ID to get your professional profile verified.
+            </p>
+
+            <a
+              href="{{ doc_upload_url }}"
+              class="mt-5 inline-flex items-center gap-2 rounded-xl bg-plum-800 px-4 py-3 text-[10px] font-bold text-white shadow-md shadow-plum-800/15 transition-all hover:-translate-y-0.5 hover:bg-plum-700"
+            >
+              <i data-lucide="upload" class="h-3.5 w-3.5"></i>
+              Upload document
+            </a>
+
+          </div>
+
+        </div>
+
+      {% endif %}
+
+    </section>
+
+
+    <!-- ========================================================= -->
+    <!-- VERIFICATION TIMELINE -->
+    <!-- ========================================================= -->
+
+    {% if nurse.verification_events.all %}
+
+      <section class="mb-7" data-reveal>
+
+        <div class="mb-4">
+
+          <div class="flex items-center gap-2">
+            <span class="h-1.5 w-1.5 rounded-full bg-plum-500"></span>
+
+            <p class="text-[9px] font-bold uppercase tracking-[0.2em] text-plum-900/30">
+              Audit trail
+            </p>
+          </div>
+
+          <h2 class="mt-1.5 font-display text-xl font-bold tracking-tight text-plum-900">
+            Verification history
+          </h2>
+
+        </div>
+
+
+        <div class="relative overflow-hidden rounded-[1.8rem] border border-plum-100/80 bg-white/75 p-5 shadow-[0_18px_60px_rgba(36,27,61,0.05)] backdrop-blur-xl sm:p-7">
+
+          <!-- Timeline line -->
+          <div class="absolute bottom-8 left-[2.05rem] top-8 w-px bg-gradient-to-b from-plum-200 via-plum-100 to-transparent sm:left-[2.8rem]"></div>
+
+          <div class="relative space-y-6">
+
+            {% for event in nurse.verification_events.all %}
+
+              <div class="relative flex gap-4 sm:gap-5">
+
+                <!-- Timeline node -->
+                <div class="relative z-10 flex h-8 w-8 shrink-0 items-center justify-center rounded-xl border border-plum-100 bg-white shadow-sm sm:h-9 sm:w-9">
+
+                  <span class="h-2.5 w-2.5 rounded-full bg-plum-500 ring-4 ring-plum-50"></span>
+
+                </div>
+
+
+                <!-- Event -->
+                <div class="min-w-0 flex-1 rounded-2xl border border-plum-100/70 bg-white/60 p-3.5 sm:p-4">
+
+                  <div class="flex flex-col gap-2 sm:flex-row sm:items-start sm:justify-between">
+
+                    <div class="min-w-0">
+
+                      <p class="text-xs font-bold text-plum-900">
+                        {{ event.get_action_display }}
+                      </p>
+
+                      {% if event.notes %}
+                        <p class="mt-1 text-[10px] leading-5 text-plum-900/50">
+                          {{ event.notes }}
+                        </p>
+                      {% endif %}
+
+                    </div>
+
+                    <span class="shrink-0 rounded-full bg-plum-50 px-2.5 py-1 text-[8px] font-bold uppercase tracking-wide text-plum-600">
+                      {{ event.created_at|date:"d M" }}
+                    </span>
+
+                  </div>
+
+                </div>
+
+              </div>
+
+            {% endfor %}
+
+          </div>
+
+        </div>
+
+      </section>
+
+    {% endif %}
+
+
+    <!-- ========================================================= -->
+    <!-- SECURITY FOOTER -->
+    <!-- ========================================================= -->
+
+    <section
+      class="flex flex-col gap-3 rounded-2xl border border-plum-100/70 bg-white/55 px-4 py-4 backdrop-blur-xl sm:flex-row sm:items-center sm:justify-between"
+      data-reveal
+    >
+
+      <div class="flex items-center gap-3">
+
+        <span class="flex h-8 w-8 items-center justify-center rounded-xl bg-plum-50 text-plum-500">
+          <i data-lucide="lock-keyhole" class="h-3.5 w-3.5"></i>
+        </span>
+
+        <div>
+          <p class="text-[9px] font-bold uppercase tracking-[0.16em] text-plum-900/30">
+            Credential security
+          </p>
+
+          <p class="mt-0.5 text-[10px] text-plum-900/45">
+            Your verification information is handled securely.
+          </p>
+        </div>
+
+      </div>
+
+      <div class="flex items-center gap-1.5">
+        <span class="h-1.5 w-1.5 rounded-full bg-emerald-500"></span>
+
+        <span class="text-[8px] font-bold uppercase tracking-[0.18em] text-plum-900/30">
+          Navvi secure
+        </span>
+      </div>
+
+    </section>
+
+  </div>
+</div>
+{% endblock %}

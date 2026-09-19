@@ -1,49 +1,905 @@
 {% extends "base.html" %}
 {% block title %}Booking — Navvi{% endblock %}
-{% block content %}
-<h1 class="text-2xl font-semibold mb-5">Booking detail</h1>
-<table class="w-full bg-white border border-border rounded-xl overflow-hidden mb-6">
-    <tr class="border-b border-border"><th class="text-left text-muted font-medium px-4 py-3">Care type</th><td class="px-4 py-3">{{ care_request.get_care_type_display }}</td></tr>
-    <tr class="border-b border-border"><th class="text-left text-muted font-medium px-4 py-3">Duration</th><td class="px-4 py-3">{{ care_request.get_duration_type_display }}</td></tr>
-    <tr class="border-b border-border"><th class="text-left text-muted font-medium px-4 py-3">Status</th><td class="px-4 py-3"><span class="bg-border text-primaryDark text-sm font-medium px-3 py-1 rounded-full">{{ care_request.get_status_display }}</span></td></tr>
-    <tr class="border-b border-border"><th class="text-left text-muted font-medium px-4 py-3">Appointment time</th><td class="px-4 py-3">{{ care_request.requested_appointment_time }}</td></tr>
-    <tr><th class="text-left text-muted font-medium px-4 py-3">Landmark</th><td class="px-4 py-3">{{ care_request.landmark }}</td></tr>
-</table>
 
-{% if care_request.status == "created" or care_request.status == "awaiting_payment" %}
-<div class="max-w-sm bg-white border border-border rounded-xl p-6"
-     x-data="{
-        amount: 5000,
-        paying: false,
-        error: '',
-        async pay() {
-            this.paying = true; this.error = '';
-            const resp = await fetch('{% url 'payment_initiate' care_request.id %}', {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/x-www-form-urlencoded',
-                    'X-CSRFToken': '{{ csrf_token }}',
-                },
-                body: new URLSearchParams({ amount: this.amount }),
-            });
-            const data = await resp.json();
-            if (resp.ok && data.authorization_url) {
-                window.location.href = data.authorization_url;
-            } else {
-                this.error = data.error || JSON.stringify(data.errors || data);
-                this.paying = false;
-            }
-        }
-     }">
-    <h3 class="font-medium mb-3">Pay for this booking</h3>
-    <label class="block text-sm font-medium mb-1">Amount (&#8358;)</label>
-    <input type="number" x-model="amount" class="w-full border border-border rounded-lg px-3 py-2 mb-3 focus:outline-none focus:ring-2 focus:ring-primary">
-    <button @click="pay" :disabled="paying"
-            class="w-full bg-primary text-white font-medium rounded-lg py-2.5 hover:bg-primaryDark transition disabled:opacity-60">
-        <span x-show="!paying">Pay with Paystack</span>
-        <span x-show="paying">Redirecting&hellip;</span>
-    </button>
-    <div class="text-alert text-sm mt-2" x-text="error"></div>
+{% block content %}
+
+<div
+  class="relative min-h-[calc(100vh-5rem)] overflow-hidden"
+  x-data="bookingDetail()"
+>
+  <!-- Ambient background -->
+  <div class="pointer-events-none absolute inset-0 overflow-hidden">
+    <div class="absolute -left-40 -top-40 h-[28rem] w-[28rem] rounded-full bg-plum-200/25 blur-3xl"></div>
+    <div class="absolute right-[-12rem] top-1/4 h-[34rem] w-[34rem] rounded-full bg-purple-200/20 blur-3xl"></div>
+    <div class="absolute bottom-[-14rem] left-1/3 h-[30rem] w-[30rem] rounded-full bg-fuchsia-100/20 blur-3xl"></div>
+  </div>
+
+  <div class="relative mx-auto max-w-6xl px-4 py-6 sm:px-6 sm:py-10 lg:px-8 lg:py-14">
+
+    <!-- Top utility bar -->
+    <div class="mb-7 flex items-center justify-between gap-4">
+      <div class="flex items-center gap-3">
+        <div class="flex h-10 w-10 items-center justify-center rounded-2xl bg-plum-600 text-white shadow-lg shadow-plum-600/20">
+          <i data-lucide="heart-pulse" class="h-5 w-5"></i>
+        </div>
+
+        <div>
+          <p class="text-[10px] font-bold uppercase tracking-[0.18em] text-plum-900/35">
+            Navvi Care
+          </p>
+          <p class="mt-0.5 text-sm font-semibold text-plum-950">
+            Booking overview
+          </p>
+        </div>
+      </div>
+
+      <div class="flex items-center gap-2 rounded-full border border-plum-100 bg-white/75 px-3.5 py-2 text-[10px] font-bold uppercase tracking-[0.12em] text-plum-900/40 shadow-sm backdrop-blur-xl">
+        <span class="h-1.5 w-1.5 rounded-full bg-emerald-400"></span>
+        Live booking
+      </div>
+    </div>
+
+    <!-- Booking hero -->
+    <section
+      class="relative overflow-hidden rounded-[2rem] bg-[#15121B] p-5 text-white shadow-2xl shadow-plum-950/15 sm:p-7 lg:p-8"
+      data-reveal
+    >
+      <!-- Decorative geometry -->
+      <div class="pointer-events-none absolute -right-32 -top-32 h-80 w-80 rounded-full border border-white/10"></div>
+      <div class="pointer-events-none absolute -right-16 -top-16 h-48 w-48 rounded-full border border-white/10"></div>
+      <div class="pointer-events-none absolute bottom-[-10rem] left-1/4 h-72 w-72 rounded-full bg-plum-600/15 blur-3xl"></div>
+
+      <div class="relative grid gap-7 lg:grid-cols-[1fr_auto] lg:items-end">
+
+        <div>
+          <div class="flex flex-wrap items-center gap-2">
+            <span class="inline-flex items-center gap-2 rounded-full border border-white/10 bg-white/5 px-3 py-1.5 text-[10px] font-bold uppercase tracking-[0.15em] text-white/50">
+              <span class="h-1.5 w-1.5 rounded-full bg-plum-300"></span>
+              Booking
+            </span>
+
+            {% include "partials/_status_badge.html" with status=care_request.status label=care_request.get_status_display %}
+          </div>
+
+          <h1 class="mt-5 max-w-2xl font-display text-3xl font-bold leading-tight tracking-tight sm:text-4xl lg:text-5xl">
+            {{ care_request.get_care_type_display }}
+          </h1>
+
+          <div class="mt-4 flex flex-wrap items-center gap-x-5 gap-y-2 text-xs text-white/40">
+            <span class="inline-flex items-center gap-2">
+              <i data-lucide="clock-3" class="h-3.5 w-3.5"></i>
+              Requested {{ care_request.created_at|date:"d M Y, g:i A" }}
+            </span>
+
+            <span class="hidden h-1 w-1 rounded-full bg-white/20 sm:block"></span>
+
+            <span class="inline-flex items-center gap-2">
+              <i data-lucide="hash" class="h-3.5 w-3.5"></i>
+              Care request #{{ care_request.id }}
+            </span>
+          </div>
+        </div>
+
+        <!-- Hero status module -->
+        <div class="w-full rounded-2xl border border-white/10 bg-white/5 p-4 sm:w-auto sm:min-w-[220px]">
+          <p class="text-[9px] font-bold uppercase tracking-[0.16em] text-white/30">
+            Current status
+          </p>
+
+          <div class="mt-3 flex items-center gap-3">
+            <div class="flex h-10 w-10 items-center justify-center rounded-xl bg-white/10">
+              <i data-lucide="activity" class="h-4 w-4 text-plum-200"></i>
+            </div>
+
+            <div>
+              <p class="text-sm font-bold text-white">
+                {{ care_request.get_status_display }}
+              </p>
+              <p class="mt-0.5 text-[10px] text-white/30">
+                Booking state
+              </p>
+            </div>
+          </div>
+        </div>
+
+      </div>
+    </section>
+
+    <!-- Main content -->
+    <div class="mt-6 grid gap-6 lg:grid-cols-[1.25fr_0.75fr]">
+
+      <!-- Primary column -->
+      <div class="space-y-6">
+
+        <!-- Booking details -->
+        <section
+          class="overflow-hidden rounded-[2rem] border border-plum-100 bg-white/85 shadow-xl shadow-plum-950/5 backdrop-blur-xl"
+          data-reveal
+        >
+          <div class="border-b border-plum-50 px-5 py-5 sm:px-7">
+            <div class="flex items-center justify-between gap-4">
+              <div class="flex items-center gap-3">
+                <div class="flex h-10 w-10 items-center justify-center rounded-xl bg-plum-50 text-plum-600">
+                  <i data-lucide="clipboard-list" class="h-5 w-5"></i>
+                </div>
+
+                <div>
+                  <p class="text-[10px] font-bold uppercase tracking-[0.16em] text-plum-900/30">
+                    Request
+                  </p>
+                  <h2 class="mt-0.5 text-sm font-bold text-plum-950">
+                    Booking details
+                  </h2>
+                </div>
+              </div>
+
+              <span class="hidden rounded-full bg-plum-50 px-3 py-1.5 text-[10px] font-bold uppercase tracking-wider text-plum-600 sm:block">
+                Care plan
+              </span>
+            </div>
+          </div>
+
+          <div class="grid gap-px bg-plum-50 sm:grid-cols-2">
+
+            <div class="bg-white p-5 sm:p-6">
+              <div class="flex items-center gap-3">
+                <div class="flex h-9 w-9 items-center justify-center rounded-xl bg-plum-50 text-plum-500">
+                  <i data-lucide="calendar-range" class="h-4 w-4"></i>
+                </div>
+
+                <div>
+                  <p class="text-[10px] font-bold uppercase tracking-[0.13em] text-plum-900/30">
+                    Duration
+                  </p>
+                  <p class="mt-1 text-sm font-bold text-plum-950">
+                    {{ care_request.get_duration_type_display }}
+                  </p>
+                </div>
+              </div>
+            </div>
+
+            <div class="bg-white p-5 sm:p-6">
+              <div class="flex items-center gap-3">
+                <div class="flex h-9 w-9 items-center justify-center rounded-xl bg-purple-50 text-purple-600">
+                  <i data-lucide="calendar-clock" class="h-4 w-4"></i>
+                </div>
+
+                <div class="min-w-0">
+                  <p class="text-[10px] font-bold uppercase tracking-[0.13em] text-plum-900/30">
+                    Appointment
+                  </p>
+                  <p class="mt-1 truncate text-sm font-bold text-plum-950">
+                    {{ care_request.requested_appointment_time|date:"d M Y, g:i A" }}
+                  </p>
+                </div>
+              </div>
+            </div>
+
+            <div class="bg-white p-5 sm:col-span-2 sm:p-6">
+              <div class="flex items-start gap-3">
+                <div class="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl bg-rose-50 text-rose-500">
+                  <i data-lucide="map-pinned" class="h-4 w-4"></i>
+                </div>
+
+                <div class="min-w-0">
+                  <p class="text-[10px] font-bold uppercase tracking-[0.13em] text-plum-900/30">
+                    Location
+                  </p>
+                  <p class="mt-1 text-sm font-bold leading-6 text-plum-950">
+                    {{ care_request.landmark|default:"No landmark provided" }}
+                  </p>
+
+                  <div class="mt-2 flex items-center gap-2 text-[10px] text-plum-900/35">
+                    <i data-lucide="navigation" class="h-3 w-3"></i>
+                    Care location attached to this request
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            {% if care_request.symptoms_notes %}
+            <div class="bg-white p-5 sm:col-span-2 sm:p-6">
+              <div class="flex items-start gap-3">
+                <div class="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl bg-amber-50 text-amber-600">
+                  <i data-lucide="notebook-pen" class="h-4 w-4"></i>
+                </div>
+
+                <div class="min-w-0">
+                  <p class="text-[10px] font-bold uppercase tracking-[0.13em] text-plum-900/30">
+                    Notes for the nurse
+                  </p>
+
+                  <p class="mt-2 whitespace-pre-line text-sm leading-6 text-plum-900/70">
+                    {{ care_request.symptoms_notes }}
+                  </p>
+                </div>
+              </div>
+            </div>
+            {% endif %}
+
+          </div>
+        </section>
+
+        <!-- Payment -->
+        {% if care_request.status == "created" or care_request.status == "awaiting_payment" %}
+        <section
+          class="relative overflow-hidden rounded-[2rem] bg-gradient-to-br from-plum-50 via-white to-purple-50/60 p-5 shadow-xl shadow-plum-950/5 ring-1 ring-plum-100 sm:p-7"
+          data-reveal
+        >
+          <div class="pointer-events-none absolute -right-20 -top-20 h-48 w-48 rounded-full bg-plum-200/30 blur-3xl"></div>
+
+          <div class="relative">
+            <div class="flex flex-wrap items-start justify-between gap-5">
+              <div class="flex items-start gap-3">
+                <div class="flex h-11 w-11 shrink-0 items-center justify-center rounded-2xl bg-plum-600 text-white shadow-lg shadow-plum-600/20">
+                  <i data-lucide="wallet-cards" class="h-5 w-5"></i>
+                </div>
+
+                <div>
+                  <p class="text-[10px] font-bold uppercase tracking-[0.16em] text-plum-600">
+                    Payment required
+                  </p>
+
+                  <h2 class="mt-1 text-base font-bold text-plum-950 sm:text-lg">
+                    Complete payment to confirm
+                  </h2>
+
+                  <p class="mt-1.5 max-w-lg text-xs leading-5 text-plum-900/50">
+                    Payment is held in escrow until the visit is confirmed complete.
+                  </p>
+                </div>
+              </div>
+
+              <div class="rounded-2xl border border-plum-100 bg-white/80 px-4 py-3 text-right shadow-sm">
+                <p class="text-[9px] font-bold uppercase tracking-[0.14em] text-plum-900/30">
+                  Estimated
+                </p>
+
+                <p
+                  class="mt-0.5 font-display text-2xl font-bold text-plum-700"
+                  x-text="estimatedAmountLabel"
+                ></p>
+              </div>
+            </div>
+
+            <div class="mt-6 grid gap-2 sm:grid-cols-3">
+              <div class="rounded-xl border border-plum-100 bg-white/70 px-3 py-3">
+                <i data-lucide="shield-check" class="h-4 w-4 text-emerald-500"></i>
+                <p class="mt-2 text-[10px] font-bold text-plum-950">Escrow protected</p>
+              </div>
+
+              <div class="rounded-xl border border-plum-100 bg-white/70 px-3 py-3">
+                <i data-lucide="credit-card" class="h-4 w-4 text-plum-500"></i>
+                <p class="mt-2 text-[10px] font-bold text-plum-950">Secure payment</p>
+              </div>
+
+              <div class="rounded-xl border border-plum-100 bg-white/70 px-3 py-3">
+                <i data-lucide="check-circle-2" class="h-4 w-4 text-plum-500"></i>
+                <p class="mt-2 text-[10px] font-bold text-plum-950">Release after care</p>
+              </div>
+            </div>
+
+            <button
+              @click="payNow()"
+              :disabled="paying"
+              class="group relative mt-5 flex w-full items-center justify-center gap-3 overflow-hidden rounded-2xl bg-[#15121B] px-6 py-4 text-sm font-bold text-white shadow-xl shadow-plum-950/15 transition-all duration-300 hover:-translate-y-0.5 hover:bg-plum-700 hover:shadow-2xl disabled:cursor-not-allowed disabled:opacity-50"
+            >
+              <span class="absolute inset-0 bg-gradient-to-r from-transparent via-white/10 to-transparent opacity-0 transition-opacity group-hover:opacity-100"></span>
+
+              <span class="relative flex h-8 w-8 items-center justify-center rounded-xl bg-white/10">
+                <i data-lucide="lock-keyhole" class="h-4 w-4"></i>
+              </span>
+
+              <span
+                x-show="!paying"
+                class="relative"
+              >
+                Pay now
+              </span>
+
+              <span
+                x-show="paying"
+                x-cloak
+                class="relative"
+              >
+                Redirecting to Paystack…
+              </span>
+
+              <i
+                data-lucide="arrow-up-right"
+                class="relative h-4 w-4 opacity-40"
+              ></i>
+            </button>
+          </div>
+        </section>
+
+        {% elif care_request.status == "paid" or care_request.status == "offered" %}
+
+        <section
+          class="rounded-[2rem] border border-emerald-100 bg-emerald-50/70 p-5 shadow-sm sm:p-6"
+          data-reveal
+        >
+          <div class="flex items-center gap-4">
+            <div class="flex h-11 w-11 shrink-0 items-center justify-center rounded-2xl bg-white text-emerald-600 shadow-sm">
+              <i data-lucide="circle-check" class="h-5 w-5"></i>
+            </div>
+
+            <div class="min-w-0">
+              <p class="text-sm font-bold text-emerald-950">
+                Payment received
+              </p>
+
+              <p class="mt-1 text-xs leading-5 text-emerald-900/60">
+                Your booking is funded and we're waiting for a nurse to accept your request.
+              </p>
+            </div>
+
+            <div class="ml-auto hidden h-2 w-2 rounded-full bg-emerald-500 sm:block"></div>
+          </div>
+        </section>
+
+        {% endif %}
+
+        <!-- Assigned nurse -->
+        {% if care_request.assignment %}
+        <section
+          class="overflow-hidden rounded-[2rem] border border-plum-100 bg-white/85 shadow-xl shadow-plum-950/5 backdrop-blur-xl"
+          data-reveal
+        >
+          <div class="border-b border-plum-50 px-5 py-5 sm:px-7">
+            <div class="flex items-center justify-between gap-4">
+              <div class="flex items-center gap-3">
+                <div class="flex h-10 w-10 items-center justify-center rounded-xl bg-purple-50 text-purple-600">
+                  <i data-lucide="user-round-check" class="h-5 w-5"></i>
+                </div>
+
+                <div>
+                  <p class="text-[10px] font-bold uppercase tracking-[0.16em] text-plum-900/30">
+                    Care professional
+                  </p>
+
+                  <h2 class="mt-0.5 text-sm font-bold text-plum-950">
+                    Your nurse
+                  </h2>
+                </div>
+              </div>
+
+              <span class="hidden rounded-full bg-emerald-50 px-3 py-1.5 text-[10px] font-bold uppercase tracking-wider text-emerald-600 sm:block">
+                Assigned
+              </span>
+            </div>
+          </div>
+
+          <div class="p-5 sm:p-7">
+
+            <div class="flex flex-wrap items-center gap-4">
+              <div class="relative">
+                <div class="flex h-14 w-14 items-center justify-center rounded-2xl bg-plum-600 text-xl font-bold text-white shadow-lg shadow-plum-600/20">
+                  {{ care_request.assignment.nurse.user.first_name|slice:":1"|upper }}
+                </div>
+
+                <span class="absolute -bottom-1 -right-1 flex h-5 w-5 items-center justify-center rounded-full border-2 border-white bg-emerald-500 text-white">
+                  <i data-lucide="check" class="h-2.5 w-2.5"></i>
+                </span>
+              </div>
+
+              <div class="min-w-0 flex-1">
+                <p class="truncate text-base font-bold text-plum-950">
+                  {{ care_request.assignment.nurse.user.get_full_name }}
+                </p>
+
+                <div class="mt-1 flex flex-wrap items-center gap-2">
+                  <span class="inline-flex items-center gap-1 text-xs text-plum-900/50">
+                    <i data-lucide="star" class="h-3 w-3 fill-current text-amber-400"></i>
+                    {{ care_request.assignment.nurse.reliability_score }}/5 reliability
+                  </span>
+
+                  <span class="h-1 w-1 rounded-full bg-plum-200"></span>
+
+                  <span class="text-xs text-plum-900/40">
+                    Assigned to your booking
+                  </span>
+                </div>
+              </div>
+
+              <div class="shrink-0">
+                {% include "partials/_status_badge.html" with status=care_request.assignment.status label=care_request.assignment.get_status_display %}
+              </div>
+            </div>
+
+            <!-- Assignment progress -->
+            <div class="mt-6 rounded-2xl bg-plum-50/60 p-4">
+              <div class="flex items-center justify-between text-[10px] font-bold uppercase tracking-wider">
+                <span class="text-plum-900/35">Visit progress</span>
+                <span class="text-plum-600">
+                  {{ care_request.assignment.get_status_display }}
+                </span>
+              </div>
+
+              <div class="mt-3 h-1.5 overflow-hidden rounded-full bg-plum-100">
+                <div
+                  class="h-full rounded-full bg-plum-600 transition-all"
+                  style="width: {% if care_request.assignment.status == 'completed' %}100%{% elif care_request.assignment.status == 'accepted' %}65%{% else %}35%{% endif %};"
+                ></div>
+              </div>
+            </div>
+
+            {% if care_request.assignment.status == "completed" and care_request.duration_type == "short_term" %}
+
+              {% if not care_request.escrow_account or care_request.escrow_account.total_released == 0 %}
+
+              <button
+                @click="confirmComplete($event)"
+                :disabled="confirming"
+                class="group mt-5 flex w-full items-center justify-center gap-3 rounded-2xl bg-[#15121B] px-6 py-4 text-sm font-bold text-white shadow-xl shadow-plum-950/10 transition-all hover:-translate-y-0.5 hover:bg-plum-700 disabled:cursor-not-allowed disabled:opacity-50"
+              >
+                <span class="flex h-8 w-8 items-center justify-center rounded-xl bg-white/10">
+                  <i data-lucide="badge-check" class="h-4 w-4"></i>
+                </span>
+
+                <span x-show="!confirming">
+                  Confirm visit complete &amp; release payment
+                </span>
+
+                <span x-show="confirming" x-cloak>
+                  Releasing…
+                </span>
+              </button>
+
+              {% else %}
+
+              <div class="mt-5 flex items-center gap-3 rounded-2xl border border-emerald-100 bg-emerald-50 px-4 py-4">
+                <div class="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl bg-white text-emerald-600 shadow-sm">
+                  <i data-lucide="circle-check" class="h-4 w-4"></i>
+                </div>
+
+                <div>
+                  <p class="text-sm font-bold text-emerald-900">
+                    Payment released
+                  </p>
+                  <p class="mt-0.5 text-xs text-emerald-800/60">
+                    Payment released to your nurse.
+                  </p>
+                </div>
+              </div>
+
+              {% endif %}
+            {% endif %}
+
+            {% if care_request.assignment.status == "completed" %}
+            <a
+              href="{% url 'rating_create' assignment_id=care_request.assignment.id %}"
+              class="group mt-4 flex items-center justify-between rounded-2xl border border-plum-100 bg-white px-4 py-3.5 text-sm font-semibold text-plum-600 transition-all hover:border-plum-200 hover:bg-plum-50"
+            >
+              <span class="flex items-center gap-2">
+                <i data-lucide="star" class="h-4 w-4"></i>
+                Rate this visit
+              </span>
+
+              <i data-lucide="arrow-up-right" class="h-4 w-4 opacity-40 transition-transform group-hover:-translate-y-0.5 group-hover:translate-x-0.5"></i>
+            </a>
+            {% endif %}
+
+          </div>
+        </section>
+        {% endif %}
+
+      </div>
+
+      <!-- Secondary column -->
+      <div class="space-y-6">
+
+        <!-- Booking snapshot -->
+        <section
+          class="rounded-[2rem] border border-plum-100 bg-white/80 p-5 shadow-xl shadow-plum-950/5 backdrop-blur-xl sm:p-6"
+          data-reveal
+        >
+          <div class="flex items-center gap-3">
+            <div class="flex h-10 w-10 items-center justify-center rounded-xl bg-plum-50 text-plum-600">
+              <i data-lucide="scan-line" class="h-5 w-5"></i>
+            </div>
+
+            <div>
+              <p class="text-[10px] font-bold uppercase tracking-[0.16em] text-plum-900/30">
+                Snapshot
+              </p>
+
+              <h2 class="mt-0.5 text-sm font-bold text-plum-950">
+                At a glance
+              </h2>
+            </div>
+          </div>
+
+          <div class="mt-5 space-y-2">
+
+            <div class="flex items-center justify-between rounded-xl bg-plum-50/60 px-3.5 py-3">
+              <span class="flex items-center gap-2 text-xs text-plum-900/45">
+                <i data-lucide="stethoscope" class="h-3.5 w-3.5"></i>
+                Care
+              </span>
+
+              <span class="max-w-[55%] truncate text-right text-xs font-bold text-plum-950">
+                {{ care_request.get_care_type_display }}
+              </span>
+            </div>
+
+            <div class="flex items-center justify-between rounded-xl bg-plum-50/60 px-3.5 py-3">
+              <span class="flex items-center gap-2 text-xs text-plum-900/45">
+                <i data-lucide="calendar-days" class="h-3.5 w-3.5"></i>
+                Date
+              </span>
+
+              <span class="text-xs font-bold text-plum-950">
+                {{ care_request.requested_appointment_time|date:"d M Y" }}
+              </span>
+            </div>
+
+            <div class="flex items-center justify-between rounded-xl bg-plum-50/60 px-3.5 py-3">
+              <span class="flex items-center gap-2 text-xs text-plum-900/45">
+                <i data-lucide="clock-3" class="h-3.5 w-3.5"></i>
+                Time
+              </span>
+
+              <span class="text-xs font-bold text-plum-950">
+                {{ care_request.requested_appointment_time|date:"g:i A" }}
+              </span>
+            </div>
+
+            <div class="flex items-center justify-between rounded-xl bg-plum-50/60 px-3.5 py-3">
+              <span class="flex items-center gap-2 text-xs text-plum-900/45">
+                <i data-lucide="calendar-range" class="h-3.5 w-3.5"></i>
+                Duration
+              </span>
+
+              <span class="text-xs font-bold text-plum-950">
+                {{ care_request.get_duration_type_display }}
+              </span>
+            </div>
+
+          </div>
+        </section>
+
+        <!-- Milestones -->
+        {% if care_request.duration_type == "long_term" and care_request.escrow_account %}
+        <section
+          class="overflow-hidden rounded-[2rem] border border-plum-100 bg-white/85 shadow-xl shadow-plum-950/5 backdrop-blur-xl"
+          data-reveal
+        >
+          <div class="border-b border-plum-50 px-5 py-5 sm:px-6">
+            <div class="flex items-center justify-between gap-3">
+              <div class="flex items-center gap-3">
+                <div class="flex h-10 w-10 items-center justify-center rounded-xl bg-purple-50 text-purple-600">
+                  <i data-lucide="milestone" class="h-5 w-5"></i>
+                </div>
+
+                <div>
+                  <p class="text-[10px] font-bold uppercase tracking-[0.16em] text-plum-900/30">
+                    Long-term care
+                  </p>
+
+                  <h2 class="mt-0.5 text-sm font-bold text-plum-950">
+                    Milestone payments
+                  </h2>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <div class="p-5 sm:p-6">
+            <div class="space-y-3">
+              {% for milestone in care_request.escrow_account.milestones.all %}
+
+              <div class="relative rounded-2xl border border-plum-100 bg-plum-50/40 p-4">
+                <div class="flex items-start justify-between gap-3">
+                  <div class="flex min-w-0 gap-3">
+                    <div class="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl bg-white text-plum-600 shadow-sm">
+                      <span class="text-xs font-bold">
+                        {{ milestone.sequence_number }}
+                      </span>
+                    </div>
+
+                    <div class="min-w-0">
+                      <p class="text-sm font-bold text-plum-950">
+                        Milestone {{ milestone.sequence_number }}
+                      </p>
+
+                      <p class="mt-1 text-[10px] leading-5 text-plum-900/45">
+                        Due {{ milestone.due_date|date:"d M Y" }}
+                      </p>
+
+                      <p class="text-[10px] font-semibold text-plum-600">
+                        {{ milestone.release_percentage|floatformat:0 }}0% release
+                      </p>
+                    </div>
+                  </div>
+
+                  <div class="shrink-0">
+                    {% include "partials/_status_badge.html" with status=milestone.status label=milestone.get_status_display %}
+                  </div>
+                </div>
+              </div>
+
+              {% empty %}
+
+              <div class="rounded-2xl border border-dashed border-plum-200 bg-plum-50/30 px-4 py-6 text-center">
+                <div class="mx-auto flex h-10 w-10 items-center justify-center rounded-xl bg-white text-plum-400 shadow-sm">
+                  <i data-lucide="milestone" class="h-4 w-4"></i>
+                </div>
+
+                <p class="mt-3 text-xs font-semibold text-plum-900/55">
+                  No milestones yet
+                </p>
+
+                <p class="mt-1 text-[10px] leading-5 text-plum-900/35">
+                  Milestones will appear here once your payment is confirmed.
+                </p>
+              </div>
+
+              {% endfor %}
+            </div>
+          </div>
+        </section>
+        {% endif %}
+
+        <!-- Vitals -->
+        {% if care_request.assignment.vitals_records.all %}
+        <section
+          class="overflow-hidden rounded-[2rem] border border-plum-100 bg-white/85 shadow-xl shadow-plum-950/5 backdrop-blur-xl"
+          data-reveal
+        >
+          <div class="border-b border-plum-50 px-5 py-5 sm:px-6">
+            <div class="flex items-center gap-3">
+              <div class="flex h-10 w-10 items-center justify-center rounded-xl bg-rose-50 text-rose-600">
+                <i data-lucide="activity" class="h-5 w-5"></i>
+              </div>
+
+              <div>
+                <p class="text-[10px] font-bold uppercase tracking-[0.16em] text-plum-900/30">
+                  Care records
+                </p>
+
+                <h2 class="mt-0.5 text-sm font-bold text-plum-950">
+                  Vitals
+                </h2>
+              </div>
+            </div>
+          </div>
+
+          <div class="p-5 sm:p-6">
+            <div class="space-y-3">
+
+              {% for v in care_request.assignment.vitals_records.all %}
+
+              <div class="rounded-2xl border border-plum-100 bg-white p-4 shadow-sm">
+                <div class="flex items-start justify-between gap-3">
+                  <div>
+                    <p class="text-xs font-bold text-plum-950">
+                      {{ v.recorded_at|date:"d M, g:i A" }}
+                    </p>
+
+                    <div class="mt-3 grid grid-cols-3 gap-2">
+                      <div class="rounded-xl bg-plum-50/70 px-2.5 py-2">
+                        <p class="text-[8px] font-bold uppercase tracking-wider text-plum-900/30">
+                          BP
+                        </p>
+                        <p class="mt-1 text-[11px] font-bold text-plum-900">
+                          {{ v.systolic_bp|default:"—" }}/{{ v.diastolic_bp|default:"—" }}
+                        </p>
+                      </div>
+
+                      <div class="rounded-xl bg-plum-50/70 px-2.5 py-2">
+                        <p class="text-[8px] font-bold uppercase tracking-wider text-plum-900/30">
+                          HR
+                        </p>
+                        <p class="mt-1 text-[11px] font-bold text-plum-900">
+                          {{ v.heart_rate|default:"—" }}
+                        </p>
+                      </div>
+
+                      <div class="rounded-xl bg-plum-50/70 px-2.5 py-2">
+                        <p class="text-[8px] font-bold uppercase tracking-wider text-plum-900/30">
+                          SpO₂
+                        </p>
+                        <p class="mt-1 text-[11px] font-bold text-plum-900">
+                          {{ v.oxygen_saturation|default:"—" }}%
+                        </p>
+                      </div>
+                    </div>
+                  </div>
+
+                  {% if v.is_high_risk %}
+                  <span class="inline-flex shrink-0 items-center gap-1.5 rounded-full bg-[#FDF0F2] px-2.5 py-1.5 text-[9px] font-bold uppercase tracking-wider text-[#B33A50]">
+                    <span class="h-1.5 w-1.5 rounded-full bg-[#D9455F]"></span>
+                    High risk
+                  </span>
+                  {% else %}
+                  <span class="inline-flex shrink-0 items-center gap-1.5 rounded-full bg-[#E9F7EF] px-2.5 py-1.5 text-[9px] font-bold uppercase tracking-wider text-[#1B7A4C]">
+                    <span class="h-1.5 w-1.5 rounded-full bg-emerald-500"></span>
+                    Normal
+                  </span>
+                  {% endif %}
+                </div>
+              </div>
+
+              {% endfor %}
+
+            </div>
+          </div>
+        </section>
+        {% endif %}
+
+      </div>
+    </div>
+
+    <!-- Dispute footer -->
+    <section
+      class="mt-6 rounded-[2rem] border border-plum-100 bg-white/65 px-5 py-5 shadow-sm backdrop-blur-xl sm:px-6"
+      data-reveal
+    >
+      <div class="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
+        <div class="flex items-start gap-3">
+          <div class="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-amber-50 text-amber-600">
+            <i data-lucide="life-buoy" class="h-5 w-5"></i>
+          </div>
+
+          <div>
+            <p class="text-sm font-bold text-plum-950">
+              Something not right?
+            </p>
+
+            <p class="mt-1 text-xs leading-5 text-plum-900/45">
+              You can raise a dispute if there's an issue with this booking.
+            </p>
+          </div>
+        </div>
+
+        <a
+          href="{% url 'dispute_create' care_request_id=care_request.id %}"
+          class="group inline-flex items-center justify-center gap-2 rounded-full border border-plum-100 bg-white px-4 py-2.5 text-xs font-bold text-plum-600 shadow-sm transition-all hover:-translate-y-0.5 hover:border-plum-200 hover:bg-plum-50"
+        >
+          Raise a dispute
+          <i data-lucide="arrow-up-right" class="h-3.5 w-3.5 transition-transform group-hover:-translate-y-0.5 group-hover:translate-x-0.5"></i>
+        </a>
+      </div>
+    </section>
+
+    <!-- Footer metadata -->
+    <div class="mt-5 flex flex-wrap items-center justify-center gap-x-5 gap-y-2 text-[9px] font-bold uppercase tracking-[0.14em] text-plum-900/25">
+      <span class="inline-flex items-center gap-1.5">
+        <i data-lucide="shield-check" class="h-3 w-3"></i>
+        Navvi Care
+      </span>
+
+      <span class="h-1 w-1 rounded-full bg-plum-200"></span>
+
+      <span class="inline-flex items-center gap-1.5">
+        <i data-lucide="lock" class="h-3 w-3"></i>
+        Secure booking
+      </span>
+
+      <span class="h-1 w-1 rounded-full bg-plum-200"></span>
+
+      <span class="inline-flex items-center gap-1.5">
+        <i data-lucide="activity" class="h-3 w-3"></i>
+        Care tracking
+      </span>
+    </div>
+
+  </div>
 </div>
-{% endif %}
+
+{% endblock %}
+
+{% block extra_scripts %}
+<script>
+  function bookingDetail() {
+    return {
+      paying: false,
+      confirming: false,
+
+      // Base per-visit rates — mirrors the public earnings estimate.
+      // NOTE: server-side pricing should be the source of truth; this is a display estimate only.
+      rates: {
+        antenatal_care: 4500,
+        wound_dressing: 3800,
+        vitals_check: 2500,
+        other: 3500
+      },
+
+      get estimatedAmountLabel() {
+        const rate = this.rates['{{ care_request.care_type }}'] || this.rates.other;
+        const amount = '{{ care_request.duration_type }}' === 'long_term'
+          ? rate * 20
+          : rate;
+
+        return '₦' + amount.toLocaleString('en-NG');
+      },
+
+      payNow() {
+        const rate = this.rates['{{ care_request.care_type }}'] || this.rates.other;
+
+        const amount = '{{ care_request.duration_type }}' === 'long_term'
+          ? rate * 20
+          : rate;
+
+        this.paying = true;
+
+        navviFetch("{% url 'payment_initiate' care_request_id=care_request.id %}", {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/x-www-form-urlencoded'
+          },
+          body: 'amount=' + amount,
+        })
+          .then(r => r.json())
+          .then(data => {
+            if (data.authorization_url) {
+              window.location.href = data.authorization_url;
+            } else {
+              this.paying = false;
+              toast(
+                data.error || 'Could not start payment. Try again.',
+                'error'
+              );
+            }
+          })
+          .catch(() => {
+            this.paying = false;
+            toast('Network error. Try again.', 'error');
+          });
+      },
+
+      confirmComplete(event) {
+        const cardEl = event
+          ? event.target.closest('.glass-card, .glass-panel')
+          : null;
+
+        this.confirming = true;
+
+        navviFetch(
+          "{% url 'escrow_release_short_term' care_request_id=care_request.id %}",
+          {
+            method: 'POST'
+          }
+        )
+          .then(r => r.json())
+          .then(data => {
+            this.confirming = false;
+
+            if (data.total_released !== undefined) {
+              confettiBurst(cardEl);
+
+              toast(
+                'Payment released to your nurse.',
+                'success'
+              );
+
+              setTimeout(
+                () => window.location.reload(),
+                1400
+              );
+            } else {
+              toast(
+                data.error || 'Could not release payment.',
+                'error'
+              );
+            }
+          })
+          .catch(() => {
+            this.confirming = false;
+            toast(
+              'Network error. Try again.',
+              'error'
+            );
+          });
+      },
+    }
+  }
+
+  document.addEventListener('DOMContentLoaded', () => {
+    if (window.lucide) {
+      lucide.createIcons();
+    }
+  });
+</script>
 {% endblock %}

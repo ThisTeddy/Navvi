@@ -1,0 +1,527 @@
+{% extends "base.html" %}
+{% block title %}Upload a document — Navvi{% endblock %}
+
+{% block content %}
+<div
+  class="relative min-h-[calc(100vh-5rem)] overflow-hidden"
+  x-data="uploadForm()"
+>
+  <!-- Ambient background -->
+  <div class="pointer-events-none absolute inset-0 overflow-hidden">
+    <div class="absolute -top-32 -right-32 h-80 w-80 rounded-full bg-plum-200/30 blur-3xl"></div>
+    <div class="absolute top-1/3 -left-40 h-96 w-96 rounded-full bg-purple-200/20 blur-3xl"></div>
+    <div class="absolute -bottom-40 right-1/4 h-96 w-96 rounded-full bg-fuchsia-100/20 blur-3xl"></div>
+  </div>
+
+  <div class="relative mx-auto max-w-5xl px-4 py-6 sm:px-6 sm:py-10 lg:px-8 lg:py-14">
+
+    <!-- Top navigation -->
+    <div class="mb-8 flex items-center justify-between gap-4">
+      <a
+        href="{% url 'nurse_verification_status' %}"
+        class="group inline-flex items-center gap-2 rounded-full border border-plum-100 bg-white/75 px-3.5 py-2 text-sm font-semibold text-plum-900/70 shadow-sm backdrop-blur-xl transition-all hover:-translate-y-0.5 hover:border-plum-200 hover:bg-white hover:text-plum-700"
+      >
+        <span class="flex h-7 w-7 items-center justify-center rounded-full bg-plum-50 transition-transform group-hover:-translate-x-0.5">
+          <i data-lucide="arrow-left" class="h-4 w-4"></i>
+        </span>
+        Verification
+      </a>
+
+      <div class="hidden items-center gap-2 sm:flex">
+        <div class="flex h-8 w-8 items-center justify-center rounded-full bg-plum-600 text-white shadow-lg shadow-plum-600/20">
+          <i data-lucide="shield-check" class="h-4 w-4"></i>
+        </div>
+        <span class="text-xs font-semibold uppercase tracking-[0.16em] text-plum-900/40">
+          Secure verification
+        </span>
+      </div>
+    </div>
+
+    <div class="grid gap-6 lg:grid-cols-[0.72fr_1.28fr] lg:items-start">
+
+      <!-- Left information panel -->
+      <section
+        class="relative overflow-hidden rounded-[2rem] border border-plum-100 bg-[#15121B] p-6 text-white shadow-2xl shadow-plum-950/10 sm:p-8 lg:sticky lg:top-8"
+        data-reveal
+      >
+        <!-- Decorative circles -->
+        <div class="pointer-events-none absolute -right-20 -top-20 h-56 w-56 rounded-full border border-white/10"></div>
+        <div class="pointer-events-none absolute -right-10 -top-10 h-36 w-36 rounded-full border border-white/10"></div>
+        <div class="pointer-events-none absolute -bottom-24 -left-24 h-56 w-56 rounded-full bg-plum-600/20 blur-2xl"></div>
+
+        <div class="relative">
+          <div class="mb-7 flex items-center justify-between">
+            <div class="flex h-12 w-12 items-center justify-center rounded-2xl bg-white/10 ring-1 ring-white/10">
+              <i data-lucide="file-check-2" class="h-6 w-6 text-white"></i>
+            </div>
+
+            <div class="rounded-full border border-white/10 bg-white/5 px-3 py-1.5 text-[10px] font-bold uppercase tracking-[0.18em] text-white/50">
+              Step 01
+            </div>
+          </div>
+
+          <p class="text-xs font-bold uppercase tracking-[0.2em] text-plum-300">
+            Verification
+          </p>
+
+          <h1 class="mt-3 font-display text-3xl font-bold leading-tight sm:text-4xl">
+            Upload your<br>
+            credentials.
+          </h1>
+
+          <p class="mt-4 max-w-sm text-sm leading-6 text-white/55">
+            Your documents help Navvi confirm that you're a qualified professional before you begin accepting care jobs.
+          </p>
+
+          <!-- Verification checklist -->
+          <div class="mt-8 space-y-3">
+            <div class="flex items-center gap-3 rounded-2xl border border-white/10 bg-white/5 p-3.5">
+              <div class="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl bg-white/10">
+                <i data-lucide="badge-check" class="h-4 w-4 text-plum-200"></i>
+              </div>
+              <div>
+                <p class="text-sm font-semibold">NMCN license</p>
+                <p class="mt-0.5 text-xs text-white/40">Professional registration</p>
+              </div>
+              <i data-lucide="check" class="ml-auto h-4 w-4 text-emerald-300"></i>
+            </div>
+
+            <div class="flex items-center gap-3 rounded-2xl border border-white/10 bg-white/5 p-3.5">
+              <div class="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl bg-white/10">
+                <i data-lucide="id-card" class="h-4 w-4 text-plum-200"></i>
+              </div>
+              <div>
+                <p class="text-sm font-semibold">Government ID</p>
+                <p class="mt-0.5 text-xs text-white/40">Identity confirmation</p>
+              </div>
+              <i data-lucide="check" class="ml-auto h-4 w-4 text-emerald-300"></i>
+            </div>
+          </div>
+
+          <!-- Security note -->
+          <div class="mt-8 border-t border-white/10 pt-6">
+            <div class="flex gap-3">
+              <div class="mt-0.5 flex h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-white/10">
+                <i data-lucide="lock-keyhole" class="h-4 w-4 text-white/70"></i>
+              </div>
+              <div>
+                <p class="text-xs font-semibold text-white/75">
+                  Your documents are protected
+                </p>
+                <p class="mt-1 text-[11px] leading-5 text-white/35">
+                  Files are submitted securely for verification and are only used to review your professional account.
+                </p>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- Upload workspace -->
+      <section
+        class="overflow-hidden rounded-[2rem] border border-plum-100 bg-white/80 shadow-xl shadow-plum-950/5 backdrop-blur-xl"
+        data-reveal
+      >
+        <!-- Header -->
+        <div class="border-b border-plum-50 px-5 py-6 sm:px-8 sm:py-7">
+          <div class="flex items-start justify-between gap-4">
+            <div>
+              <div class="mb-3 inline-flex items-center gap-2 rounded-full bg-plum-50 px-3 py-1.5 text-[10px] font-bold uppercase tracking-[0.16em] text-plum-600">
+                <span class="h-1.5 w-1.5 rounded-full bg-plum-500"></span>
+                Identity check
+              </div>
+
+              <h2 class="font-display text-2xl font-bold tracking-tight text-plum-950 sm:text-3xl">
+                Upload a document
+              </h2>
+
+              <p class="mt-2 max-w-xl text-sm leading-6 text-plum-900/50">
+                Select the document type and upload a clear copy for our verification team.
+              </p>
+            </div>
+
+            <div class="hidden h-12 w-12 shrink-0 items-center justify-center rounded-2xl bg-plum-50 text-plum-600 sm:flex">
+              <i data-lucide="scan-line" class="h-5 w-5"></i>
+            </div>
+          </div>
+        </div>
+
+        <!-- Form -->
+        <form
+          method="post"
+          action="{% url 'nurse_document_upload' %}"
+          enctype="multipart/form-data"
+          @submit="if (!validate()) { $event.preventDefault(); }"
+          novalidate
+          class="px-5 py-6 sm:px-8 sm:py-8"
+        >
+          {% csrf_token %}
+
+          {% if errors %}
+          <div class="mb-6 flex items-start gap-3 rounded-2xl border border-[#F5C8D0] bg-[#FDF0F2] px-4 py-4 text-[#B33A50]">
+            <div class="flex h-8 w-8 shrink-0 items-center justify-center rounded-xl bg-white/70">
+              <i data-lucide="triangle-alert" class="h-4 w-4"></i>
+            </div>
+            <div>
+              <p class="text-sm font-semibold">There’s something to fix</p>
+              <p class="mt-0.5 text-xs leading-5 text-[#B33A50]/75">
+                Please review the highlighted fields and try again.
+              </p>
+            </div>
+          </div>
+          {% endif %}
+
+          <div class="space-y-7">
+
+            <!-- Document type -->
+            <div>
+              <div class="mb-2.5 flex items-end justify-between gap-3">
+                <div>
+                  <label
+                    for="document_type"
+                    class="text-sm font-semibold text-plum-950"
+                  >
+                    Document type
+                  </label>
+                  <p class="mt-0.5 text-xs text-plum-900/40">
+                    Tell us what you're submitting.
+                  </p>
+                </div>
+
+                <span class="text-[10px] font-bold uppercase tracking-[0.14em] text-plum-900/25">
+                  Required
+                </span>
+              </div>
+
+              <div class="relative">
+                <div class="pointer-events-none absolute inset-y-0 left-0 flex w-12 items-center justify-center text-plum-400">
+                  <i data-lucide="file-text" class="h-[18px] w-[18px]"></i>
+                </div>
+
+                <select
+                  id="document_type"
+                  name="document_type"
+                  x-model="documentType"
+                  @change="touchType()"
+                  class="w-full appearance-none rounded-2xl border bg-white py-4 pl-12 pr-12 text-sm font-medium text-plum-950 outline-none transition-all focus:ring-4"
+                  :class="errors.document_type
+                    ? 'border-[#D9455F] focus:border-[#D9455F] focus:ring-[#D9455F]/10'
+                    : 'border-plum-100 hover:border-plum-200 focus:border-plum-500 focus:ring-plum-500/10'"
+                >
+                  <option value="">Select document type</option>
+                  {% for value, label in document_types %}
+                  <option value="{{ value }}">{{ label }}</option>
+                  {% endfor %}
+                </select>
+
+                <div class="pointer-events-none absolute inset-y-0 right-0 flex w-12 items-center justify-center text-plum-400">
+                  <i data-lucide="chevron-down" class="h-4 w-4"></i>
+                </div>
+              </div>
+
+              {% if errors.document_type %}
+              <p class="mt-2 flex items-center gap-1.5 text-xs font-medium text-[#D9455F]">
+                <i data-lucide="circle-alert" class="h-3.5 w-3.5"></i>
+                {{ errors.document_type }}
+              </p>
+              {% endif %}
+
+              <p
+                x-show="errors.document_type"
+                x-text="errors.document_type"
+                class="mt-2 flex items-center gap-1.5 text-xs font-medium text-[#D9455F]"
+              ></p>
+            </div>
+
+            <!-- File upload -->
+            <div>
+              <div class="mb-2.5 flex items-end justify-between gap-3">
+                <div>
+                  <label
+                    for="file"
+                    class="text-sm font-semibold text-plum-950"
+                  >
+                    Document file
+                  </label>
+                  <p class="mt-0.5 text-xs text-plum-900/40">
+                    Upload a clear, readable copy.
+                  </p>
+                </div>
+
+                <span class="text-[10px] font-bold uppercase tracking-[0.14em] text-plum-900/25">
+                  Max clarity
+                </span>
+              </div>
+
+              <label
+                for="file"
+                class="group relative block cursor-pointer overflow-hidden rounded-[1.5rem] border-2 border-dashed bg-gradient-to-br from-white via-plum-50/30 to-purple-50/40 p-5 transition-all duration-300 hover:-translate-y-0.5 hover:bg-plum-50/50"
+                :class="errors.file
+                  ? 'border-[#D9455F] shadow-lg shadow-[#D9455F]/5'
+                  : 'border-plum-100 hover:border-plum-300 hover:shadow-xl hover:shadow-plum-950/5'"
+              >
+                <!-- Decorative grid -->
+                <div class="pointer-events-none absolute inset-0 opacity-40">
+                  <div class="absolute -right-10 -top-10 h-28 w-28 rounded-full border border-plum-100"></div>
+                  <div class="absolute -right-5 -top-5 h-18 w-18 rounded-full border border-plum-100"></div>
+                  <div class="absolute -bottom-16 -left-16 h-32 w-32 rounded-full bg-plum-100/40 blur-2xl"></div>
+                </div>
+
+                <div class="relative flex flex-col items-center justify-center py-7 text-center sm:py-9">
+
+                  <!-- Upload icon -->
+                  <div
+                    class="relative mb-5 flex h-16 w-16 items-center justify-center rounded-[1.25rem] bg-white text-plum-600 shadow-lg shadow-plum-900/5 ring-1 ring-plum-100 transition-all duration-300 group-hover:-translate-y-1 group-hover:scale-105 group-hover:shadow-xl"
+                  >
+                    <div class="absolute inset-2 rounded-xl bg-plum-50"></div>
+                    <i data-lucide="cloud-upload" class="relative h-7 w-7"></i>
+
+                    <span class="absolute -right-1 -top-1 flex h-5 w-5 items-center justify-center rounded-full bg-plum-600 text-white shadow-md">
+                      <i data-lucide="plus" class="h-3 w-3"></i>
+                    </span>
+                  </div>
+
+                  <p
+                    class="max-w-full truncate px-4 text-sm font-bold text-plum-950 sm:max-w-md"
+                    x-text="fileName || 'Choose a document from your device'"
+                  ></p>
+
+                  <p class="mt-2 text-xs text-plum-900/40">
+                    PDF, JPG, JPEG or PNG
+                  </p>
+
+                  <div class="mt-5 flex flex-wrap items-center justify-center gap-2">
+                    <span class="inline-flex items-center gap-1.5 rounded-full border border-plum-100 bg-white/80 px-3 py-1.5 text-[10px] font-semibold text-plum-900/45">
+                      <i data-lucide="file-type-2" class="h-3 w-3"></i>
+                      Documents
+                    </span>
+                    <span class="inline-flex items-center gap-1.5 rounded-full border border-plum-100 bg-white/80 px-3 py-1.5 text-[10px] font-semibold text-plum-900/45">
+                      <i data-lucide="image" class="h-3 w-3"></i>
+                      Images
+                    </span>
+                  </div>
+                </div>
+
+                <!-- Selected indicator -->
+                <div
+                  x-show="fileName"
+                  class="relative mt-3 flex items-center gap-3 rounded-2xl border border-emerald-100 bg-emerald-50/80 px-4 py-3 text-left"
+                >
+                  <div class="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl bg-white text-emerald-600 shadow-sm">
+                    <i data-lucide="check-circle-2" class="h-4 w-4"></i>
+                  </div>
+
+                  <div class="min-w-0 flex-1">
+                    <p class="text-xs font-bold text-emerald-900">
+                      File selected
+                    </p>
+                    <p
+                      class="mt-0.5 truncate text-[11px] text-emerald-800/60"
+                      x-text="fileName"
+                    ></p>
+                  </div>
+
+                  <span class="shrink-0 text-[10px] font-bold uppercase tracking-wider text-emerald-600">
+                    Ready
+                  </span>
+                </div>
+              </label>
+
+              <input
+                type="file"
+                id="file"
+                name="file"
+                class="sr-only"
+                @change="onFile($event)"
+                accept=".pdf,.jpg,.jpeg,.png"
+              >
+
+              {% if errors.file %}
+              <p class="mt-2 flex items-center gap-1.5 text-xs font-medium text-[#D9455F]">
+                <i data-lucide="circle-alert" class="h-3.5 w-3.5"></i>
+                {{ errors.file }}
+              </p>
+              {% endif %}
+
+              <p
+                x-show="errors.file"
+                x-text="errors.file"
+                class="mt-2 flex items-center gap-1.5 text-xs font-medium text-[#D9455F]"
+              ></p>
+            </div>
+
+            <!-- Submission preview -->
+            <div class="rounded-[1.5rem] border border-plum-100 bg-plum-50/45 p-4 sm:p-5">
+              <div class="flex items-center gap-3">
+                <div class="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-white text-plum-600 shadow-sm ring-1 ring-plum-100">
+                  <i data-lucide="clipboard-check" class="h-[18px] w-[18px]"></i>
+                </div>
+
+                <div class="min-w-0">
+                  <p class="text-xs font-bold uppercase tracking-[0.12em] text-plum-900/40">
+                    Submission preview
+                  </p>
+                  <p class="mt-1 truncate text-sm font-semibold text-plum-950">
+                    <span x-text="documentType || 'Document type not selected'"></span>
+                  </p>
+                </div>
+
+                <div class="ml-auto hidden h-2 w-2 rounded-full bg-plum-400 sm:block"></div>
+              </div>
+
+              <div class="mt-4 grid grid-cols-2 gap-2">
+                <div class="rounded-xl border border-plum-100/80 bg-white/70 px-3 py-2.5">
+                  <p class="text-[9px] font-bold uppercase tracking-[0.14em] text-plum-900/30">
+                    Type
+                  </p>
+                  <p
+                    class="mt-1 truncate text-xs font-semibold text-plum-900/70"
+                    x-text="documentType || '—'"
+                  ></p>
+                </div>
+
+                <div class="rounded-xl border border-plum-100/80 bg-white/70 px-3 py-2.5">
+                  <p class="text-[9px] font-bold uppercase tracking-[0.14em] text-plum-900/30">
+                    File
+                  </p>
+                  <p
+                    class="mt-1 truncate text-xs font-semibold text-plum-900/70"
+                    x-text="fileName || '—'"
+                  ></p>
+                </div>
+              </div>
+            </div>
+
+            <!-- Submit -->
+            <div class="pt-1">
+              <button
+                type="submit"
+                class="group relative flex w-full items-center justify-center gap-3 overflow-hidden rounded-2xl bg-[#15121B] px-6 py-4 text-sm font-bold text-white shadow-xl shadow-plum-950/15 transition-all duration-300 hover:-translate-y-0.5 hover:bg-plum-700 hover:shadow-2xl hover:shadow-plum-700/20 active:translate-y-0"
+              >
+                <span class="absolute inset-0 bg-gradient-to-r from-transparent via-white/10 to-transparent opacity-0 transition-opacity duration-500 group-hover:opacity-100"></span>
+
+                <span class="relative flex h-8 w-8 items-center justify-center rounded-xl bg-white/10">
+                  <i data-lucide="upload-cloud" class="h-4 w-4 transition-transform group-hover:-translate-y-0.5"></i>
+                </span>
+
+                <span class="relative">Upload document</span>
+
+                <i
+                  data-lucide="arrow-up-right"
+                  class="relative h-4 w-4 opacity-50 transition-transform group-hover:translate-x-0.5 group-hover:-translate-y-0.5"
+                ></i>
+              </button>
+            </div>
+
+            <!-- Back -->
+            <div class="flex justify-center">
+              <a
+                href="{% url 'nurse_verification_status' %}"
+                class="group inline-flex items-center gap-2 rounded-full px-4 py-2 text-sm font-semibold text-plum-600 transition-colors hover:bg-plum-50 hover:text-plum-700"
+              >
+                <i data-lucide="arrow-left" class="h-4 w-4 transition-transform group-hover:-translate-x-0.5"></i>
+                Back to verification status
+              </a>
+            </div>
+          </div>
+        </form>
+
+        <!-- Footer reassurance -->
+        <div class="border-t border-plum-50 bg-plum-50/30 px-5 py-4 sm:px-8">
+          <div class="flex items-center justify-center gap-2 text-center">
+            <i data-lucide="shield-check" class="h-4 w-4 text-plum-500"></i>
+            <p class="text-[11px] font-medium text-plum-900/40">
+              Secure document submission · Navvi verification
+            </p>
+          </div>
+        </div>
+      </section>
+    </div>
+
+    <!-- Bottom status strip -->
+    <div
+      class="mt-6 grid gap-3 sm:grid-cols-3"
+      data-reveal
+    >
+      <div class="flex items-center gap-3 rounded-2xl border border-plum-100 bg-white/70 px-4 py-3.5 backdrop-blur-xl">
+        <div class="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl bg-plum-50 text-plum-600">
+          <i data-lucide="file-check-2" class="h-4 w-4"></i>
+        </div>
+        <div>
+          <p class="text-xs font-bold text-plum-950">Clear documents</p>
+          <p class="mt-0.5 text-[10px] text-plum-900/35">Readable & complete</p>
+        </div>
+      </div>
+
+      <div class="flex items-center gap-3 rounded-2xl border border-plum-100 bg-white/70 px-4 py-3.5 backdrop-blur-xl">
+        <div class="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl bg-emerald-50 text-emerald-600">
+          <i data-lucide="lock" class="h-4 w-4"></i>
+        </div>
+        <div>
+          <p class="text-xs font-bold text-plum-950">Protected upload</p>
+          <p class="mt-0.5 text-[10px] text-plum-900/35">Secure submission</p>
+        </div>
+      </div>
+
+      <div class="flex items-center gap-3 rounded-2xl border border-plum-100 bg-white/70 px-4 py-3.5 backdrop-blur-xl">
+        <div class="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl bg-amber-50 text-amber-600">
+          <i data-lucide="clock-3" class="h-4 w-4"></i>
+        </div>
+        <div>
+          <p class="text-xs font-bold text-plum-950">Review next</p>
+          <p class="mt-0.5 text-[10px] text-plum-900/35">Verification follows</p>
+        </div>
+      </div>
+    </div>
+
+  </div>
+</div>
+{% endblock %}
+
+{% block extra_scripts %}
+<script>
+  function uploadForm() {
+    return {
+      documentType: '',
+      fileName: '',
+      errors: {},
+
+      touchType() {
+        if (!this.documentType) {
+          this.errors.document_type = 'Select a document type.';
+        } else {
+          delete this.errors.document_type;
+        }
+      },
+
+      onFile(event) {
+        const file = event.target.files[0];
+
+        this.fileName = file ? file.name : '';
+
+        if (!file) {
+          this.errors.file = 'Choose a file to upload.';
+        } else {
+          delete this.errors.file;
+        }
+      },
+
+      validate() {
+        this.touchType();
+
+        if (!this.fileName) {
+          this.errors.file = 'Choose a file to upload.';
+        }
+
+        return Object.keys(this.errors).length === 0;
+      },
+    }
+  }
+
+  document.addEventListener('DOMContentLoaded', () => {
+    if (window.lucide) {
+      lucide.createIcons();
+    }
+  });
+</script>
+{% endblock %}

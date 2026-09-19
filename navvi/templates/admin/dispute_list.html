@@ -1,0 +1,62 @@
+{% extends "base.html" %}
+{% block title %}Disputes — Navvi{% endblock %}
+
+{% block content %}
+<div class="max-w-4xl mx-auto px-5 sm:px-8 py-10 md:py-14">
+
+  <p class="text-sm font-semibold text-plum-600 mb-2">Admin</p>
+  <h1 class="font-display text-3xl sm:text-4xl font-700">Disputes</h1>
+  <p class="mt-2 text-plum-900/60">{{ disputes|length }} total</p>
+
+  {% if disputes %}
+  <div class="mt-8 grid gap-4">
+    {% for dispute in disputes %}
+    <div x-data="{ resolving: false }" class="glass-card rounded-3xl p-5 sm:p-6" data-reveal>
+      <div class="flex items-start justify-between gap-4">
+        <div class="min-w-0">
+          <div class="flex items-center gap-2 flex-wrap">
+            <p class="font-semibold">{{ dispute.care_request.get_care_type_display }}</p>
+            {% include "partials/_status_badge.html" with status=dispute.status label=dispute.get_status_display %}
+          </div>
+          <p class="text-xs text-plum-900/50 mt-1">Raised by {{ dispute.raised_by.get_full_name }} · {{ dispute.created_at|date:"d M Y, g:i A" }}</p>
+        </div>
+      </div>
+
+      <p class="mt-3 text-sm text-plum-900/70">{{ dispute.reason }}</p>
+
+      {% if dispute.status == "resolved" or dispute.status == "dismissed" %}
+        {% if dispute.resolution_notes %}
+        <div class="mt-3 bg-plum-50 rounded-2xl px-4 py-3 text-sm text-plum-900/60">
+          <span class="font-semibold text-plum-900/80">Resolution:</span> {{ dispute.resolution_notes }}
+        </div>
+        {% endif %}
+      {% else %}
+        <template x-if="!resolving">
+          <button @click="resolving = true" type="button" class="mt-4 text-sm font-semibold text-plum-600">
+            Resolve this dispute
+          </button>
+        </template>
+
+        <template x-if="resolving">
+          <form method="post" action="{% url 'admin_dispute_resolve' dispute_id=dispute.id %}" class="mt-4 grid gap-3" x-cloak>
+            {% csrf_token %}
+            <textarea name="resolution_notes" rows="2" required placeholder="Resolution notes" class="field-input text-sm"></textarea>
+            <div class="grid grid-cols-3 gap-2">
+              <button type="button" @click="resolving = false" class="font-semibold border border-plum-300 text-plum-900 px-4 py-2.5 rounded-full text-sm">Cancel</button>
+              <button type="submit" name="status" value="dismissed" class="font-semibold border border-plum-300 text-plum-900 px-4 py-2.5 rounded-full text-sm">Dismiss</button>
+              <button type="submit" name="status" value="resolved" class="font-semibold bg-ink text-white px-4 py-2.5 rounded-full text-sm">Mark resolved</button>
+            </div>
+          </form>
+        </template>
+      {% endif %}
+    </div>
+    {% endfor %}
+  </div>
+  {% else %}
+  <div class="mt-8">
+    {% include "partials/_empty_state.html" with title="No disputes" subtitle="Disputes raised by patients or nurses will show up here." %}
+  </div>
+  {% endif %}
+
+</div>
+{% endblock %}

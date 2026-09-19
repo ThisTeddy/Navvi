@@ -1,0 +1,57 @@
+{% extends "base.html" %}
+{% block title %}Dispatch monitor — Navvi{% endblock %}
+
+{% block content %}
+<div class="max-w-6xl mx-auto px-5 sm:px-8 py-10 md:py-14">
+
+  <p class="text-sm font-semibold text-plum-600 mb-2">Admin</p>
+  <h1 class="font-display text-3xl sm:text-4xl font-700">Dispatch monitor</h1>
+  <p class="mt-2 text-plum-900/60">{{ care_requests|length }} active booking{{ care_requests|length|pluralize }}</p>
+
+  <!-- Status filter -->
+  {% comment %} status_choices: list of (value, display) tuples — pass from admin_dispatch_monitor view, e.g. CareRequest.Status.choices minus COMPLETED/CANCELLED {% endcomment %}
+  <div class="mt-6 flex gap-2 overflow-x-auto no-scrollbar pb-1">
+    <a href="?" class="shrink-0 text-sm font-semibold px-4 py-2 rounded-full {% if not request.GET.status %}bg-ink text-white{% else %}border border-plum-300 text-plum-900{% endif %}">
+      All
+    </a>
+    {% for value, display in status_choices %}
+    <a href="?status={{ value }}" class="shrink-0 text-sm font-semibold px-4 py-2 rounded-full {% if request.GET.status == value %}bg-ink text-white{% else %}border border-plum-300 text-plum-900{% endif %}">
+      {{ display }}
+    </a>
+    {% endfor %}
+  </div>
+
+  {% if care_requests %}
+  <div class="mt-8 grid gap-4">
+    {% for cr in care_requests %}
+    <div class="glass-card rounded-3xl p-5 sm:p-6 grid sm:grid-cols-4 gap-4 items-center" data-reveal>
+      <div class="sm:col-span-2 min-w-0">
+        <div class="flex items-center gap-2">
+          <p class="font-semibold truncate">{{ cr.get_care_type_display }}</p>
+          {% include "partials/_status_badge.html" with status=cr.status label=cr.get_status_display %}
+        </div>
+        <p class="text-xs text-plum-900/50 mt-1">{{ cr.patient.get_full_name }} · {{ cr.landmark|default:"No landmark" }}</p>
+      </div>
+      <div>
+        <p class="text-xs text-plum-900/40">Nurse</p>
+        <p class="text-sm font-medium mt-0.5">
+          {% if cr.assignment %}{{ cr.assignment.nurse.user.get_full_name }}{% else %}Unassigned{% endif %}
+        </p>
+      </div>
+      <div class="flex items-center justify-between sm:justify-end gap-4">
+        <p class="text-xs text-plum-900/40">{{ cr.created_at|date:"d M, g:i A" }}</p>
+        {% if cr.escrow_account %}
+        <a href="{% url 'escrow_ledger' care_request_id=cr.id %}" class="text-sm font-semibold text-plum-600 shrink-0">Ledger</a>
+        {% endif %}
+      </div>
+    </div>
+    {% endfor %}
+  </div>
+  {% else %}
+  <div class="mt-8">
+    {% include "partials/_empty_state.html" with title="Nothing active" subtitle="No bookings match this filter right now." %}
+  </div>
+  {% endif %}
+
+</div>
+{% endblock %}

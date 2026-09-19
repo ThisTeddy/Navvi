@@ -1,0 +1,105 @@
+{% extends "base.html" %}
+{% block title %}Nurse verification queue — Navvi{% endblock %}
+
+{% block content %}
+<div class="max-w-5xl mx-auto px-5 sm:px-8 py-10 md:py-14">
+
+  <div class="flex flex-wrap items-end justify-between gap-4">
+    <div>
+      <p class="text-sm font-semibold text-plum-600 mb-2">Admin</p>
+      <h1 class="font-display text-3xl sm:text-4xl font-700">Nurse verification queue</h1>
+      <p class="mt-2 text-plum-900/60">{{ nurses|length }} nurse{{ nurses|length|pluralize }} pending review</p>
+    </div>
+
+    <form method="get" class="flex gap-2">
+      <input type="text" name="search" value="{{ request.GET.search|default:'' }}" placeholder="Search NMCN number"
+             class="field-input w-56">
+      <button type="submit" class="font-semibold border border-plum-300 text-plum-900 px-4 py-2.5 rounded-full hover:border-plum-600 hover:text-plum-600 transition-colors">
+        Search
+      </button>
+    </form>
+  </div>
+
+  {% if nurses %}
+  <div class="mt-8 grid gap-5">
+    {% for nurse in nurses %}
+    <div x-data="{ reasonMode: null }" class="glass-card rounded-3xl p-6 grid md:grid-cols-3 gap-6" data-reveal>
+
+      <div class="md:col-span-2">
+        <div class="flex items-center gap-3">
+          <div class="w-10 h-10 rounded-full bg-plum-600 text-white flex items-center justify-center font-display font-600 shrink-0">
+            {{ nurse.user.first_name|slice:":1"|upper }}
+          </div>
+          <div class="min-w-0">
+            <p class="font-semibold truncate">{{ nurse.user.get_full_name }}</p>
+            <p class="text-xs text-plum-900/50">{{ nurse.user.phone_number }}</p>
+          </div>
+          {% include "partials/_status_badge.html" with status=nurse.verification_status label=nurse.get_verification_status_display %}
+        </div>
+
+        <div class="mt-4 grid grid-cols-2 gap-4 text-sm">
+          <div>
+            <p class="text-xs text-plum-900/40">NMCN registration</p>
+            <p class="font-medium mt-0.5">{{ nurse.nmcn_registration_number }}</p>
+          </div>
+          <div>
+            <p class="text-xs text-plum-900/40">Government ID</p>
+            <p class="font-medium mt-0.5">{{ nurse.government_id_number }}</p>
+          </div>
+        </div>
+
+        {% if nurse.documents.all %}
+        <div class="mt-4 flex flex-wrap gap-2">
+          {% for doc in nurse.documents.all %}
+            <a href="{{ doc.file.url }}" target="_blank" class="text-xs font-semibold text-plum-600 bg-plum-50 px-3 py-1.5 rounded-full">
+              {{ doc.get_document_type_display }}
+            </a>
+          {% endfor %}
+        </div>
+        {% else %}
+        <p class="mt-4 text-xs text-plum-900/40">No documents uploaded yet.</p>
+        {% endif %}
+      </div>
+
+      <div class="flex flex-col justify-center gap-2.5">
+        <template x-if="!reasonMode">
+          <div class="grid gap-2.5">
+            <form method="post" action="{% url 'admin_nurse_verification_decision' nurse_id=nurse.id %}">
+              {% csrf_token %}
+              <input type="hidden" name="action" value="approve">
+              <button type="submit" class="w-full font-semibold bg-ink text-white px-4 py-2.5 rounded-full hover:bg-plum-700 transition-colors">
+                Approve
+              </button>
+            </form>
+            <button @click="reasonMode = 'reject'" type="button" class="w-full font-semibold border border-plum-300 text-plum-900 px-4 py-2.5 rounded-full hover:border-plum-600 hover:text-plum-600 transition-colors">
+              Reject
+            </button>
+            <button @click="reasonMode = 'suspend'" type="button" class="w-full font-semibold border border-plum-300 text-plum-900 px-4 py-2.5 rounded-full hover:border-plum-600 hover:text-plum-600 transition-colors">
+              Suspend
+            </button>
+          </div>
+        </template>
+
+        <template x-if="reasonMode">
+          <form method="post" action="{% url 'admin_nurse_verification_decision' nurse_id=nurse.id %}" class="grid gap-2.5" x-cloak>
+            {% csrf_token %}
+            <input type="hidden" name="action" :value="reasonMode">
+            <textarea name="reason" rows="2" required placeholder="Reason (shown to the nurse)" class="field-input text-sm"></textarea>
+            <div class="grid grid-cols-2 gap-2">
+              <button type="button" @click="reasonMode = null" class="font-semibold border border-plum-300 text-plum-900 px-4 py-2.5 rounded-full text-sm">Cancel</button>
+              <button type="submit" class="font-semibold bg-[#B33A50] text-white px-4 py-2.5 rounded-full text-sm">Confirm</button>
+            </div>
+          </form>
+        </template>
+      </div>
+    </div>
+    {% endfor %}
+  </div>
+  {% else %}
+  <div class="mt-8">
+    {% include "partials/_empty_state.html" with title="Queue is clear" subtitle="No nurses are waiting on verification right now." %}
+  </div>
+  {% endif %}
+
+</div>
+{% endblock %}

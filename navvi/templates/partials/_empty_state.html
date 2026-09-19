@@ -1,0 +1,13 @@
+{% comment %}
+Usage:
+  {% include "partials/_empty_state.html" with title="No jobs nearby yet" subtitle="Check back soon — new requests appear here as they come in." cta_text="Refresh" cta_url="" %}
+cta_url is optional; omit it if you don't need an action.
+{% endcomment %}
+<div class="text-center py-16 px-6 border border-dashed border-plum-200 rounded-3xl">
+  <div class="w-12 h-12 mx-auto rounded-full bg-plum-50 flex items-center justify-center text-plum-400 font-display text-xl">·</div>
+  <h3 class="mt-4 font-semibold text-lg">{{ title }}</h3>
+  <p class="mt-1.5 text-sm text-plum-900/50 max-w-sm mx-auto">{{ subtitle }}</p>
+  {% if cta_text and cta_url %}
+    <a href="{{ cta_url }}" class="mt-5 inline-block text-sm font-semibold bg-ink text-white px-5 py-2.5 rounded-full hover:bg-plum-700 transition-colors">{{ cta_text }}</a>
+  {% endif %}
+</div>

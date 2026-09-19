@@ -1,0 +1,737 @@
+{% extends "base.html" %}
+{% block title %}Wallet — Navvi{% endblock %}
+
+{% block content %}
+<div
+  class="relative min-h-[calc(100dvh-4rem)] overflow-hidden"
+  x-data="{
+    balance: {{ available_balance|default:0 }},
+    payouts: [
+      {% for p in payouts %}
+        {
+          id: '{{ p.id }}',
+          amount: '{{ p.amount }}',
+          status: '{{ p.status }}',
+          is_milestone: {{ p.milestone_id|yesno:'true,false' }},
+          created_at: '{{ p.created_at|date:'c' }}'
+        },
+      {% endfor %}
+    ],
+
+    filter: 'all',
+    showSummary: true,
+    lastUpdated: new Date(),
+
+    get filtered() {
+      return this.filter === 'all'
+        ? this.payouts
+        : this.payouts.filter(p => p.status === this.filter);
+    },
+
+    get counts() {
+      return {
+        all: this.payouts.length,
+        paid: this.payouts.filter(p => p.status === 'paid').length,
+        pending: this.payouts.filter(p => p.status === 'pending').length,
+        failed: this.payouts.filter(p => p.status === 'failed').length
+      };
+    },
+
+    get totalPaid() {
+      return this.payouts
+        .filter(p => p.status === 'paid')
+        .reduce((sum, p) => sum + parseFloat(p.amount || 0), 0);
+    },
+
+    get totalPending() {
+      return this.payouts
+        .filter(p => p.status === 'pending')
+        .reduce((sum, p) => sum + parseFloat(p.amount || 0), 0);
+    },
+
+    get totalFailed() {
+      return this.payouts
+        .filter(p => p.status === 'failed')
+        .reduce((sum, p) => sum + parseFloat(p.amount || 0), 0);
+    },
+
+    poll() {
+      fetch('{% url 'nurse_wallet' %}?format=json', {
+        headers: {
+          'X-Requested-With': 'XMLHttpRequest'
+        }
+      })
+      .then(r => r.json())
+      .then(data => {
+        this.balance = parseFloat(data.available_balance);
+        this.payouts = data.payouts;
+        this.lastUpdated = new Date();
+      })
+      .catch(() => {});
+    },
+
+    fmt(n) {
+      return '₦' + parseFloat(n || 0).toLocaleString('en-NG', {
+        minimumFractionDigits: 2,
+        maximumFractionDigits: 2
+      });
+    },
+
+    compact(n) {
+      return '₦' + parseFloat(n || 0).toLocaleString('en-NG', {
+        maximumFractionDigits: 0
+      });
+    },
+
+    statusLabel(status) {
+      return {
+        paid: 'Paid',
+        pending: 'Pending',
+        failed: 'Failed'
+      }[status] || status;
+    },
+
+    statusIcon(status) {
+      return {
+        paid: 'circle-check',
+        pending: 'clock-3',
+        failed: 'circle-alert'
+      }[status] || 'wallet-cards';
+    },
+
+    payoutLabel(p) {
+      return p.is_milestone
+        ? 'Milestone payout'
+        : 'Visit payout';
+    },
+
+    formatDate(iso) {
+      return new Date(iso).toLocaleDateString('en-NG', {
+        day: 'numeric',
+        month: 'short',
+        year: 'numeric'
+      });
+    },
+
+    formatTime(iso) {
+      return new Date(iso).toLocaleTimeString('en-NG', {
+        hour: 'numeric',
+        minute: '2-digit'
+      });
+    },
+
+    init() {
+      setInterval(() => this.poll(), 20000);
+    }
+  }"
+>
+  <!-- Ambient background -->
+  <div class="pointer-events-none absolute inset-0 -z-10 overflow-hidden">
+    <div class="absolute -right-32 -top-40 h-[30rem] w-[30rem] rounded-full bg-plum-200/25 blur-3xl"></div>
+    <div class="absolute -left-48 top-[38%] h-[32rem] w-[32rem] rounded-full bg-purple-100/30 blur-3xl"></div>
+    <div class="absolute bottom-[-10rem] right-[15%] h-80 w-80 rounded-full bg-plum-100/30 blur-3xl"></div>
+  </div>
+
+  <div class="mx-auto max-w-5xl px-4 py-6 sm:px-6 sm:py-10 lg:px-8">
+
+    <!-- ========================================================= -->
+    <!-- PAGE HEADER -->
+    <!-- ========================================================= -->
+
+    <section
+      class="relative mb-6 overflow-hidden rounded-[2rem] border border-plum-100/80 bg-white/75 p-5 shadow-[0_24px_80px_rgba(36,27,61,0.07)] backdrop-blur-xl sm:p-7"
+      data-reveal
+    >
+      <!-- Decorative geometry -->
+      <div class="pointer-events-none absolute -right-16 -top-20 h-56 w-56 rounded-full border-[22px] border-plum-100/40"></div>
+      <div class="pointer-events-none absolute right-20 top-14 h-2 w-2 rounded-full bg-plum-500/50"></div>
+      <div class="pointer-events-none absolute right-12 top-24 h-1.5 w-1.5 rounded-full bg-plum-300"></div>
+
+      <div class="relative flex flex-col gap-5 sm:flex-row sm:items-center sm:justify-between">
+
+        <div>
+          <div class="mb-3 flex items-center gap-2">
+            <span class="flex h-8 w-8 items-center justify-center rounded-xl bg-plum-100 text-plum-700">
+              <i data-lucide="wallet-cards" class="h-4 w-4"></i>
+            </span>
+
+            <span class="text-[10px] font-bold uppercase tracking-[0.22em] text-plum-600/75">
+              Earnings
+            </span>
+
+            <span class="h-1 w-1 rounded-full bg-plum-300"></span>
+
+            <span class="flex items-center gap-1.5 text-[10px] font-medium text-plum-900/40">
+              <span class="relative flex h-2 w-2">
+                <span class="absolute inline-flex h-full w-full animate-ping rounded-full bg-emerald-400 opacity-60"></span>
+                <span class="relative inline-flex h-2 w-2 rounded-full bg-emerald-500"></span>
+              </span>
+              Live
+            </span>
+          </div>
+
+          <h1 class="font-display text-2xl font-bold tracking-[-0.04em] text-ink sm:text-3xl">
+            Wallet
+          </h1>
+
+          <p class="mt-1.5 max-w-xl text-xs leading-5 text-plum-900/45 sm:text-sm">
+            Your earnings from completed visits and released milestones.
+          </p>
+        </div>
+
+        <div class="flex items-center gap-2 self-start sm:self-auto">
+          <div class="rounded-2xl border border-plum-100 bg-plum-50/70 px-3.5 py-2.5">
+            <p class="text-[8px] font-bold uppercase tracking-[0.18em] text-plum-900/30">
+              Last synced
+            </p>
+
+            <p
+              class="mt-0.5 text-[10px] font-semibold text-plum-800"
+              x-text="lastUpdated.toLocaleTimeString([], { hour: 'numeric', minute: '2-digit' })"
+            ></p>
+          </div>
+
+          <button
+            type="button"
+            @click="poll()"
+            class="flex h-10 w-10 items-center justify-center rounded-2xl border border-plum-100 bg-white text-plum-600 shadow-sm transition-all hover:border-plum-200 hover:bg-plum-50 active:scale-95"
+            aria-label="Refresh wallet"
+          >
+            <i data-lucide="refresh-cw" class="h-4 w-4"></i>
+          </button>
+        </div>
+
+      </div>
+    </section>
+
+
+    <!-- ========================================================= -->
+    <!-- BALANCE CARD -->
+    <!-- ========================================================= -->
+
+    <section
+      class="relative mb-6 overflow-hidden rounded-[2.2rem] bg-gradient-to-br from-plum-900 via-plum-800 to-plum-700 p-6 text-white shadow-[0_30px_90px_rgba(36,27,61,0.22)] sm:p-8"
+      data-reveal
+    >
+      <!-- Glow -->
+      <div class="pointer-events-none absolute -right-20 -top-24 h-72 w-72 rounded-full bg-plum-400/20 blur-3xl"></div>
+      <div class="pointer-events-none absolute -bottom-28 -left-20 h-64 w-64 rounded-full bg-purple-400/10 blur-3xl"></div>
+
+      <!-- Decorative circles -->
+      <div class="pointer-events-none absolute right-[-2rem] top-[-4rem] h-48 w-48 rounded-full border border-white/10"></div>
+      <div class="pointer-events-none absolute right-[2rem] top-[1rem] h-28 w-28 rounded-full border border-white/5"></div>
+
+      <div class="relative">
+
+        <!-- Card top -->
+        <div class="flex items-start justify-between gap-4">
+
+          <div>
+            <div class="flex items-center gap-2">
+              <span class="flex h-8 w-8 items-center justify-center rounded-xl bg-white/10 ring-1 ring-white/10">
+                <i data-lucide="sparkles" class="h-4 w-4 text-plum-200"></i>
+              </span>
+
+              <span class="text-[9px] font-bold uppercase tracking-[0.22em] text-white/45">
+                Available balance
+              </span>
+            </div>
+          </div>
+
+          <div class="flex items-center gap-1.5 rounded-full border border-white/10 bg-white/10 px-2.5 py-1.5">
+            <span class="h-1.5 w-1.5 rounded-full bg-emerald-400"></span>
+            <span class="text-[9px] font-bold uppercase tracking-widest text-white/60">
+              Available
+            </span>
+          </div>
+
+        </div>
+
+        <!-- Main balance -->
+        <div class="mt-7">
+          <p
+            class="font-display text-4xl font-bold tracking-[-0.055em] sm:text-5xl"
+            x-text="fmt(balance)"
+          ></p>
+
+          <div class="mt-3 flex items-center gap-2">
+            <span class="flex h-5 w-5 items-center justify-center rounded-full bg-emerald-400/15">
+              <i data-lucide="arrow-up-right" class="h-3 w-3 text-emerald-300"></i>
+            </span>
+
+            <span class="text-[10px] font-medium text-white/45">
+              Funds released from completed care work
+            </span>
+          </div>
+        </div>
+
+        <!-- Balance metadata -->
+        <div class="mt-8 grid grid-cols-2 gap-2.5 sm:grid-cols-3">
+
+          <div class="rounded-2xl border border-white/10 bg-white/[0.07] p-3.5 backdrop-blur-sm">
+            <p class="text-[8px] font-bold uppercase tracking-[0.18em] text-white/35">
+              Paid out
+            </p>
+
+            <p
+              class="mt-1 text-sm font-bold text-white"
+              x-text="compact(totalPaid)"
+            ></p>
+          </div>
+
+          <div class="rounded-2xl border border-white/10 bg-white/[0.07] p-3.5 backdrop-blur-sm">
+            <p class="text-[8px] font-bold uppercase tracking-[0.18em] text-white/35">
+              Pending
+            </p>
+
+            <p
+              class="mt-1 text-sm font-bold text-white"
+              x-text="compact(totalPending)"
+            ></p>
+          </div>
+
+          <div class="col-span-2 rounded-2xl border border-white/10 bg-white/[0.07] p-3.5 backdrop-blur-sm sm:col-span-1">
+            <p class="text-[8px] font-bold uppercase tracking-[0.18em] text-white/35">
+              Transactions
+            </p>
+
+            <p
+              class="mt-1 text-sm font-bold text-white"
+              x-text="payouts.length"
+            ></p>
+          </div>
+
+        </div>
+
+        <!-- Bottom card line -->
+        <div class="mt-5 flex items-center justify-between border-t border-white/10 pt-4">
+          <div class="flex items-center gap-2">
+            <i data-lucide="shield-check" class="h-3.5 w-3.5 text-plum-200/70"></i>
+            <span class="text-[9px] font-medium text-white/35">
+              Secured by Navvi
+            </span>
+          </div>
+
+          <span class="text-[9px] font-medium text-white/25">
+            NGN · Nigerian Naira
+          </span>
+        </div>
+
+      </div>
+    </section>
+
+
+    <!-- ========================================================= -->
+    <!-- MINI ANALYTICS -->
+    <!-- ========================================================= -->
+
+    <section
+      class="mb-7 grid grid-cols-1 gap-2.5 sm:grid-cols-3"
+      data-reveal
+    >
+
+      <div class="group rounded-2xl border border-plum-100/80 bg-white/75 p-4 shadow-sm backdrop-blur-xl transition-all hover:-translate-y-0.5 hover:shadow-md">
+
+        <div class="flex items-start justify-between">
+          <span class="flex h-8 w-8 items-center justify-center rounded-xl bg-emerald-50 text-emerald-600">
+            <i data-lucide="circle-check" class="h-4 w-4"></i>
+          </span>
+
+          <span class="text-[8px] font-bold uppercase tracking-widest text-plum-900/25">
+            Paid
+          </span>
+        </div>
+
+        <p
+          class="mt-4 font-display text-xl font-bold tracking-tight text-plum-900"
+          x-text="compact(totalPaid)"
+        ></p>
+
+        <p class="mt-0.5 text-[10px] text-plum-900/35">
+          Released earnings
+        </p>
+      </div>
+
+
+      <div class="group rounded-2xl border border-plum-100/80 bg-white/75 p-4 shadow-sm backdrop-blur-xl transition-all hover:-translate-y-0.5 hover:shadow-md">
+
+        <div class="flex items-start justify-between">
+          <span class="flex h-8 w-8 items-center justify-center rounded-xl bg-amber-50 text-amber-600">
+            <i data-lucide="clock-3" class="h-4 w-4"></i>
+          </span>
+
+          <span class="text-[8px] font-bold uppercase tracking-widest text-plum-900/25">
+            Pending
+          </span>
+        </div>
+
+        <p
+          class="mt-4 font-display text-xl font-bold tracking-tight text-plum-900"
+          x-text="compact(totalPending)"
+        ></p>
+
+        <p class="mt-0.5 text-[10px] text-plum-900/35">
+          Awaiting release
+        </p>
+      </div>
+
+
+      <div class="group rounded-2xl border border-plum-100/80 bg-white/75 p-4 shadow-sm backdrop-blur-xl transition-all hover:-translate-y-0.5 hover:shadow-md">
+
+        <div class="flex items-start justify-between">
+          <span class="flex h-8 w-8 items-center justify-center rounded-xl bg-plum-50 text-plum-600">
+            <i data-lucide="receipt-text" class="h-4 w-4"></i>
+          </span>
+
+          <span class="text-[8px] font-bold uppercase tracking-widest text-plum-900/25">
+            Activity
+          </span>
+        </div>
+
+        <p
+          class="mt-4 font-display text-xl font-bold tracking-tight text-plum-900"
+          x-text="counts.all"
+        ></p>
+
+        <p class="mt-0.5 text-[10px] text-plum-900/35">
+          Total payouts
+        </p>
+      </div>
+
+    </section>
+
+
+    <!-- ========================================================= -->
+    <!-- TRANSACTION HEADER -->
+    <!-- ========================================================= -->
+
+    <section class="mb-4" data-reveal>
+
+      <div class="flex items-end justify-between gap-4">
+
+        <div>
+          <div class="flex items-center gap-2">
+            <span class="h-1.5 w-1.5 rounded-full bg-plum-500"></span>
+
+            <p class="text-[9px] font-bold uppercase tracking-[0.22em] text-plum-900/30">
+              Transaction history
+            </p>
+          </div>
+
+          <h2 class="mt-1.5 font-display text-lg font-bold tracking-tight text-plum-900">
+            Your payouts
+          </h2>
+        </div>
+
+        <span class="rounded-full bg-plum-50 px-2.5 py-1.5 text-[9px] font-bold text-plum-600">
+          <span x-text="filtered.length"></span>
+          shown
+        </span>
+
+      </div>
+
+    </section>
+
+
+    <!-- ========================================================= -->
+    <!-- FILTERS -->
+    <!-- ========================================================= -->
+
+    <section
+      class="mb-4 overflow-hidden rounded-2xl border border-plum-100/80 bg-white/70 p-1.5 shadow-sm backdrop-blur-xl"
+      data-reveal
+    >
+      <div class="grid grid-cols-4 gap-1">
+
+        <template x-for="f in ['all','paid','pending','failed']" :key="f">
+
+          <button
+            type="button"
+            @click="filter = f"
+            class="relative rounded-xl px-2 py-2.5 text-[10px] font-bold capitalize transition-all duration-200 sm:px-3"
+            :class="filter === f
+              ? 'bg-plum-800 text-white shadow-md shadow-plum-800/15'
+              : 'text-plum-900/45 hover:bg-plum-50 hover:text-plum-700'"
+          >
+
+            <span class="relative z-10 flex items-center justify-center gap-1.5">
+
+              <span x-text="f"></span>
+
+              <span
+                class="rounded-full px-1.5 py-0.5 text-[8px]"
+                :class="filter === f
+                  ? 'bg-white/15 text-white'
+                  : 'bg-plum-50 text-plum-600'"
+                x-text="counts[f]"
+              ></span>
+
+            </span>
+
+          </button>
+
+        </template>
+
+      </div>
+    </section>
+
+
+    <!-- ========================================================= -->
+    <!-- EMPTY STATE -->
+    <!-- ========================================================= -->
+
+    <template x-if="filtered.length === 0">
+      <section
+        class="relative overflow-hidden rounded-[2rem] border border-plum-100 bg-white/75 p-9 text-center shadow-[0_20px_60px_rgba(36,27,61,0.06)] backdrop-blur-xl sm:p-14"
+        data-reveal
+      >
+
+        <div class="absolute inset-x-0 top-0 h-1 bg-gradient-to-r from-transparent via-plum-500 to-transparent"></div>
+
+        <div class="mx-auto flex h-16 w-16 items-center justify-center rounded-[1.4rem] bg-plum-50 ring-8 ring-plum-50/50">
+          <i data-lucide="wallet-minimal" class="h-7 w-7 text-plum-400"></i>
+        </div>
+
+        <p class="mt-6 font-display text-lg font-bold tracking-tight text-plum-900">
+          Nothing here yet
+        </p>
+
+        <p class="mx-auto mt-2 max-w-sm text-xs leading-5 text-plum-900/40">
+          There are no payouts in this category. Once your care visits are completed and released, they'll appear here.
+        </p>
+
+        <div class="mx-auto mt-6 flex w-fit items-center gap-2 rounded-full bg-plum-50 px-3 py-2">
+          <i data-lucide="activity" class="h-3 w-3 text-plum-500"></i>
+
+          <span class="text-[9px] font-bold uppercase tracking-[0.18em] text-plum-600">
+            Wallet is listening
+          </span>
+        </div>
+
+      </section>
+    </template>
+
+
+    <!-- ========================================================= -->
+    <!-- PAYOUT LIST -->
+    <!-- ========================================================= -->
+
+    <div class="space-y-3">
+
+      <template x-for="(p, index) in filtered" :key="p.id">
+
+        <article
+          class="group relative overflow-hidden rounded-[1.5rem] border border-plum-100/80 bg-white/80 shadow-[0_10px_40px_rgba(36,27,61,0.045)] backdrop-blur-xl transition-all duration-300 hover:-translate-y-0.5 hover:border-plum-200 hover:shadow-[0_18px_55px_rgba(36,27,61,0.08)]"
+          data-reveal
+        >
+
+          <!-- Status rail -->
+          <div
+            class="absolute inset-y-0 left-0 w-1"
+            :class="{
+              'bg-gradient-to-b from-emerald-400 to-emerald-600': p.status === 'paid',
+              'bg-gradient-to-b from-amber-300 to-amber-500': p.status === 'pending',
+              'bg-gradient-to-b from-rose-400 to-rose-600': p.status === 'failed'
+            }"
+          ></div>
+
+          <div class="p-4 sm:p-5">
+
+            <div class="flex items-start justify-between gap-4">
+
+              <!-- Left -->
+              <div class="flex min-w-0 items-center gap-3">
+
+                <div
+                  class="flex h-11 w-11 shrink-0 items-center justify-center rounded-2xl transition-transform duration-300 group-hover:scale-105"
+                  :class="{
+                    'bg-emerald-50 text-emerald-600 ring-1 ring-emerald-100': p.status === 'paid',
+                    'bg-amber-50 text-amber-600 ring-1 ring-amber-100': p.status === 'pending',
+                    'bg-rose-50 text-rose-600 ring-1 ring-rose-100': p.status === 'failed'
+                  }"
+                >
+                  <i
+                    :data-lucide="statusIcon(p.status)"
+                    class="h-5 w-5"
+                  ></i>
+                </div>
+
+                <div class="min-w-0">
+
+                  <div class="flex flex-wrap items-center gap-2">
+
+                    <p
+                      class="font-display text-base font-bold tracking-tight text-plum-900 sm:text-lg"
+                      x-text="fmt(p.amount)"
+                    ></p>
+
+                    <span
+                      class="rounded-full px-2 py-0.5 text-[8px] font-bold uppercase tracking-wide"
+                      :class="{
+                        'bg-emerald-50 text-emerald-700': p.status === 'paid',
+                        'bg-amber-50 text-amber-700': p.status === 'pending',
+                        'bg-rose-50 text-rose-700': p.status === 'failed'
+                      }"
+                      x-text="statusLabel(p.status)"
+                    ></span>
+
+                  </div>
+
+                  <div class="mt-1 flex flex-wrap items-center gap-1.5 text-[10px] text-plum-900/40">
+
+                    <span x-text="payoutLabel(p)"></span>
+
+                    <span class="h-0.5 w-0.5 rounded-full bg-plum-300"></span>
+
+                    <span x-text="formatDate(p.created_at)"></span>
+
+                  </div>
+
+                </div>
+
+              </div>
+
+
+              <!-- Number -->
+              <div class="hidden shrink-0 text-right sm:block">
+
+                <p class="text-[8px] font-bold uppercase tracking-[0.16em] text-plum-900/25">
+                  Reference
+                </p>
+
+                <p
+                  class="mt-1 font-mono text-[9px] text-plum-900/35"
+                  x-text="'#' + String(p.id).slice(-8)"
+                ></p>
+
+              </div>
+
+            </div>
+
+
+            <!-- Details strip -->
+            <div class="mt-4 grid grid-cols-2 gap-2">
+
+              <div class="rounded-xl border border-plum-100/70 bg-plum-50/40 px-3 py-2.5">
+
+                <div class="flex items-center gap-2">
+                  <i data-lucide="calendar-days" class="h-3 w-3 text-plum-400"></i>
+
+                  <div>
+                    <p class="text-[7px] font-bold uppercase tracking-[0.16em] text-plum-900/25">
+                      Date
+                    </p>
+
+                    <p
+                      class="mt-0.5 text-[9px] font-semibold text-plum-900/60"
+                      x-text="formatDate(p.created_at)"
+                    ></p>
+                  </div>
+                </div>
+
+              </div>
+
+
+              <div class="rounded-xl border border-plum-100/70 bg-white/60 px-3 py-2.5">
+
+                <div class="flex items-center gap-2">
+                  <i data-lucide="clock-3" class="h-3 w-3 text-plum-400"></i>
+
+                  <div>
+                    <p class="text-[7px] font-bold uppercase tracking-[0.16em] text-plum-900/25">
+                      Time
+                    </p>
+
+                    <p
+                      class="mt-0.5 text-[9px] font-semibold text-plum-900/60"
+                      x-text="formatTime(p.created_at)"
+                    ></p>
+                  </div>
+                </div>
+
+              </div>
+
+            </div>
+
+
+            <!-- Bottom status -->
+            <div class="mt-3 flex items-center justify-between border-t border-plum-100/70 pt-3">
+
+              <div class="flex items-center gap-2">
+
+                <span
+                  class="flex h-6 w-6 items-center justify-center rounded-lg"
+                  :class="{
+                    'bg-emerald-50 text-emerald-600': p.status === 'paid',
+                    'bg-amber-50 text-amber-600': p.status === 'pending',
+                    'bg-rose-50 text-rose-600': p.status === 'failed'
+                  }"
+                >
+                  <i
+                    :data-lucide="statusIcon(p.status)"
+                    class="h-3 w-3"
+                  ></i>
+                </span>
+
+                <span
+                  class="text-[9px] font-semibold"
+                  :class="{
+                    'text-emerald-700': p.status === 'paid',
+                    'text-amber-700': p.status === 'pending',
+                    'text-rose-700': p.status === 'failed'
+                  }"
+                  x-text="
+                    p.status === 'paid'
+                      ? 'Funds released'
+                      : p.status === 'pending'
+                        ? 'Awaiting release'
+                        : 'Payment unsuccessful'
+                  "
+                ></span>
+
+              </div>
+
+              <span class="text-[8px] font-medium text-plum-900/25">
+                Navvi Wallet
+              </span>
+
+            </div>
+
+          </div>
+
+        </article>
+
+      </template>
+
+    </div>
+
+
+    <!-- ========================================================= -->
+    <!-- WALLET FOOTER -->
+    <!-- ========================================================= -->
+
+    <div
+      x-show="payouts.length > 0"
+      class="mt-7 flex items-center justify-center gap-2"
+      data-reveal
+    >
+
+      <span class="h-px w-10 bg-gradient-to-r from-transparent to-plum-200"></span>
+
+      <div class="flex items-center gap-1.5 rounded-full border border-plum-100 bg-white/70 px-3 py-1.5">
+
+        <i data-lucide="shield-check" class="h-3 w-3 text-plum-400"></i>
+
+        <span class="text-[8px] font-bold uppercase tracking-[0.2em] text-plum-900/30">
+          Your earnings are tracked securely
+        </span>
+
+      </div>
+
+      <span class="h-px w-10 bg-gradient-to-l from-transparent to-plum-200"></span>
+
+    </div>
+
+  </div>
+</div>
+{% endblock %}

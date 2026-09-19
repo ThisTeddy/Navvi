@@ -1,0 +1,299 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Register as a nurse — Navvi</title>
+<script src="https://cdn.tailwindcss.com"></script>
+<script defer src="https://cdnjs.cloudflare.com/ajax/libs/alpinejs/3.13.5/cdn.min.js"></script>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@500;600;700&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+<script>
+  tailwind.config = {
+    theme: {
+      extend: {
+        colors: {
+          ink: '#1C1730',
+          plum: {
+            50:  '#F6F4FD',
+            100: '#ECE7FB',
+            200: '#D9CFF6',
+            300: '#BBA9EE',
+            400: '#9C86E0',
+            500: '#7E63D3',
+            600: '#6A4FC4',
+            700: '#5A3FAA',
+            800: '#493488',
+            900: '#241B3D',
+          },
+        },
+        fontFamily: {
+          display: ['"Space Grotesk"', 'sans-serif'],
+          body: ['"Inter"', 'sans-serif'],
+        },
+      },
+    },
+  }
+</script>
+<style>
+  body { font-family: 'Inter', sans-serif; color: #1C1730; }
+  .font-display { font-family: 'Space Grotesk', sans-serif; }
+  [x-cloak] { display: none !important; }
+  @media (prefers-reduced-motion: reduce) { * { animation: none !important; transition: none !important; } }
+
+  @keyframes float {
+    0%, 100% { transform: translateY(0); }
+    50% { transform: translateY(-8px); }
+  }
+  .float-slow { animation: float 6s ease-in-out infinite; }
+
+  input:focus, select:focus { outline: none; }
+  .field-input {
+    width: 100%;
+    border: 1px solid #ECE7FB;
+    border-radius: 1rem;
+    padding: 0.85rem 1rem;
+    font-size: 0.95rem;
+    background: #fff;
+    transition: border-color 0.15s ease;
+  }
+  .field-input:focus { border-color: #6A4FC4; }
+  .field-input.field-error { border-color: #D9455F; }
+</style>
+</head>
+<body class="bg-white text-ink antialiased min-h-screen">
+
+<div x-data="nurseRegisterForm()" class="min-h-screen flex flex-col">
+
+  <!-- ============ HEADER ============ -->
+  <header class="border-b border-plum-100">
+    <div class="max-w-6xl mx-auto px-5 sm:px-8 h-16 flex items-center justify-between">
+      <a href="/" class="font-display font-700 text-xl tracking-tight text-ink">
+        navvi<span class="text-plum-600">.</span>
+      </a>
+      <a href="{% url 'patient_register' %}" class="text-sm font-medium text-plum-900/60 hover:text-plum-600 transition-colors">
+        Booking care instead? <span class="text-plum-600 font-semibold">Register as a family</span>
+      </a>
+    </div>
+  </header>
+
+  <main class="flex-1">
+    <div class="max-w-6xl mx-auto px-5 sm:px-8 py-10 md:py-16 grid lg:grid-cols-5 gap-12">
+
+      <!-- ============ SIDE PANEL (desktop only) ============ -->
+      <aside class="hidden lg:block lg:col-span-2">
+        <div class="sticky top-16">
+          <p class="text-sm font-semibold text-plum-600 mb-3">For licensed nurses</p>
+          <h1 class="font-display text-4xl font-700 leading-tight">
+            Register once.<br>Start claiming jobs this week.
+          </h1>
+          <p class="mt-4 text-plum-900/60 max-w-sm">
+            Your NMCN license and ID get checked by our verification team — usually within 48 hours. After that, you're live.
+          </p>
+
+          <div class="mt-10 space-y-5">
+            <div class="flex gap-3">
+              <div class="w-7 h-7 shrink-0 rounded-full bg-plum-600 text-white text-xs font-display font-700 flex items-center justify-center mt-0.5">1</div>
+              <div>
+                <p class="font-semibold text-sm">Tell us who you are</p>
+                <p class="text-sm text-plum-900/50">Name, phone number, and a password.</p>
+              </div>
+            </div>
+            <div class="flex gap-3">
+              <div class="w-7 h-7 shrink-0 rounded-full bg-plum-100 text-plum-600 text-xs font-display font-700 flex items-center justify-center mt-0.5">2</div>
+              <div>
+                <p class="font-semibold text-sm">We verify your license</p>
+                <p class="text-sm text-plum-900/50">NMCN number and government ID, checked by our team.</p>
+              </div>
+            </div>
+            <div class="flex gap-3">
+              <div class="w-7 h-7 shrink-0 rounded-full bg-plum-100 text-plum-600 text-xs font-display font-700 flex items-center justify-center mt-0.5">3</div>
+              <div>
+                <p class="font-semibold text-sm">Start claiming jobs</p>
+                <p class="text-sm text-plum-900/50">Browse home care requests near you and accept what fits.</p>
+              </div>
+            </div>
+          </div>
+
+          <div class="float-slow mt-10 bg-plum-50 rounded-3xl p-5 max-w-sm">
+            <p class="text-sm text-plum-900/70">"Verification was faster than I expected. I was live and claiming jobs the same week I registered."</p>
+            <p class="mt-3 text-xs font-semibold text-plum-900/80">Tunde A. — Community Health Nurse</p>
+          </div>
+        </div>
+      </aside>
+
+      <!-- ============ FORM ============ -->
+      <div class="lg:col-span-3">
+        <div class="lg:hidden mb-8">
+          <p class="text-sm font-semibold text-plum-600 mb-2">For licensed nurses</p>
+          <h1 class="font-display text-3xl font-700 leading-tight">Register as a nurse</h1>
+          <p class="mt-2 text-plum-900/60 text-sm">Takes about five minutes. Verification usually clears within 48 hours.</p>
+        </div>
+
+        <!-- Form -->
+        <form method="post" action="{% url 'nurse_register' %}"
+              @submit="if (!validate()) { $event.preventDefault(); } else { submitting = true; }"
+              novalidate class="space-y-5">
+          {% csrf_token %}
+
+          {% if errors %}
+          <div class="bg-[#FDF0F2] border border-[#F5C8D0] text-[#B33A50] text-sm rounded-2xl px-4 py-3">
+            Please fix the highlighted fields and try again.
+          </div>
+          {% endif %}
+
+          <div class="bg-plum-50/60 border border-plum-100 rounded-2xl px-4 py-3 flex items-start gap-3">
+            <span class="text-plum-600 font-display text-lg leading-none mt-0.5">i</span>
+            <p class="text-xs text-plum-900/60">
+              You'll need your NMCN registration number and a government-issued ID to complete this step.
+            </p>
+          </div>
+
+          <!-- Full name -->
+          <div>
+            <label for="full_name" class="block text-sm font-medium mb-1.5">Full name</label>
+            <input
+              type="text" id="full_name" name="full_name" autocomplete="name"
+              x-model="fields.full_name" @blur="touch('full_name')" value="{{ data.full_name|default:'' }}"
+              class="field-input" :class="errors.full_name && 'field-error'"
+              placeholder="Adaeze Okafor"
+            >
+            <p x-show="errors.full_name" x-cloak class="mt-1.5 text-xs text-[#D9455F]" x-text="errors.full_name"></p>
+            {% if errors.full_name %}<p class="mt-1.5 text-xs text-[#D9455F]">{{ errors.full_name }}</p>{% endif %}
+          </div>
+
+          <!-- Phone number -->
+          <div>
+            <label for="phone_number" class="block text-sm font-medium mb-1.5">Phone number</label>
+            <input
+              type="tel" id="phone_number" name="phone_number" autocomplete="tel"
+              x-model="fields.phone_number" @blur="touch('phone_number')" value="{{ data.phone_number|default:'' }}"
+              class="field-input" :class="errors.phone_number && 'field-error'"
+              placeholder="0803 123 4567"
+            >
+            <p x-show="errors.phone_number" x-cloak class="mt-1.5 text-xs text-[#D9455F]" x-text="errors.phone_number"></p>
+            {% if errors.phone_number %}<p class="mt-1.5 text-xs text-[#D9455F]">{{ errors.phone_number }}</p>{% endif %}
+            <p x-show="!errors.phone_number" class="mt-1.5 text-xs text-plum-900/40">This doubles as your login.</p>
+          </div>
+
+          <!-- NMCN registration number -->
+          <div>
+            <label for="nmcn_registration_number" class="block text-sm font-medium mb-1.5">NMCN registration number</label>
+            <input
+              type="text" id="nmcn_registration_number" name="nmcn_registration_number"
+              x-model="fields.nmcn_registration_number" @blur="touch('nmcn_registration_number')" value="{{ data.nmcn_registration_number|default:'' }}"
+              class="field-input" :class="errors.nmcn_registration_number && 'field-error'"
+              placeholder="e.g. NMCN/RN/238471"
+            >
+            <p x-show="errors.nmcn_registration_number" x-cloak class="mt-1.5 text-xs text-[#D9455F]" x-text="errors.nmcn_registration_number"></p>
+            {% if errors.nmcn_registration_number %}<p class="mt-1.5 text-xs text-[#D9455F]">{{ errors.nmcn_registration_number }}</p>{% endif %}
+          </div>
+
+          <!-- Government ID number -->
+          <div>
+            <label for="government_id_number" class="block text-sm font-medium mb-1.5">Government ID number</label>
+            <input
+              type="text" id="government_id_number" name="government_id_number"
+              x-model="fields.government_id_number" @blur="touch('government_id_number')" value="{{ data.government_id_number|default:'' }}"
+              class="field-input" :class="errors.government_id_number && 'field-error'"
+              placeholder="NIN or international passport number"
+            >
+            <p x-show="errors.government_id_number" x-cloak class="mt-1.5 text-xs text-[#D9455F]" x-text="errors.government_id_number"></p>
+            {% if errors.government_id_number %}<p class="mt-1.5 text-xs text-[#D9455F]">{{ errors.government_id_number }}</p>{% endif %}
+          </div>
+
+          <!-- Password -->
+          <div>
+            <label for="password" class="block text-sm font-medium mb-1.5">Password</label>
+            <div class="relative">
+              <input
+                :type="showPassword ? 'text' : 'password'" id="password" name="password" autocomplete="new-password"
+                x-model="fields.password" @blur="touch('password')" @input="touch('password')"
+                class="field-input pr-12" :class="errors.password && 'field-error'"
+                placeholder="At least 8 characters"
+              >
+              <button type="button" @click="showPassword = !showPassword"
+                class="absolute right-3.5 top-1/2 -translate-y-1/2 text-xs font-semibold text-plum-600">
+                <span x-text="showPassword ? 'Hide' : 'Show'"></span>
+              </button>
+            </div>
+            <p x-show="errors.password" x-cloak class="mt-1.5 text-xs text-[#D9455F]" x-text="errors.password"></p>
+
+            <!-- strength meter -->
+            <div class="mt-2 flex gap-1.5" x-show="fields.password.length > 0">
+              <div class="h-1 flex-1 rounded-full" :class="strength >= 1 ? 'bg-plum-600' : 'bg-plum-100'"></div>
+              <div class="h-1 flex-1 rounded-full" :class="strength >= 2 ? 'bg-plum-600' : 'bg-plum-100'"></div>
+              <div class="h-1 flex-1 rounded-full" :class="strength >= 3 ? 'bg-plum-600' : 'bg-plum-100'"></div>
+            </div>
+          </div>
+
+          <button
+            type="submit"
+            :disabled="submitting"
+            class="w-full font-semibold bg-ink text-white px-6 py-3.5 rounded-full hover:bg-plum-700 transition-colors disabled:opacity-50"
+          >
+            <span x-show="!submitting">Register as a nurse</span>
+            <span x-show="submitting" x-cloak>Creating your account…</span>
+          </button>
+
+          <p class="text-xs text-plum-900/40 text-center leading-relaxed">
+            By registering, you agree to Navvi's Terms of Service and Privacy Policy.
+          </p>
+
+          <p class="text-sm text-center text-plum-900/60 pt-2">
+            Already have an account? <a href="{% url 'login' %}" class="font-semibold text-plum-600">Log in</a>
+          </p>
+        </form>
+      </div>
+    </div>
+  </main>
+</div>
+
+<script>
+  function nurseRegisterForm() {
+    return {
+      fields: {
+        full_name: '',
+        phone_number: '',
+        nmcn_registration_number: '',
+        government_id_number: '',
+        password: '',
+      },
+      errors: {},
+      submitting: false,
+      showPassword: false,
+
+      get strength() {
+        const p = this.fields.password;
+        let score = 0;
+        if (p.length >= 8) score++;
+        if (/[A-Z]/.test(p) && /[0-9]/.test(p)) score++;
+        if (p.length >= 12 || /[^A-Za-z0-9]/.test(p)) score++;
+        return score;
+      },
+
+      touch(field) {
+        const v = this.fields[field];
+        let msg = '';
+        if (field === 'full_name' && !v.trim()) msg = 'Enter your full name.';
+        if (field === 'phone_number') {
+          if (!v.trim()) msg = 'Enter a phone number.';
+          else if (!/^[0-9+\s]{7,15}$/.test(v.trim())) msg = 'Enter a valid phone number.';
+        }
+        if (field === 'nmcn_registration_number' && !v.trim()) msg = 'Enter your NMCN registration number.';
+        if (field === 'government_id_number' && !v.trim()) msg = 'Enter a government ID number.';
+        if (field === 'password' && v.length < 8) msg = 'Password must be at least 8 characters.';
+        if (msg) this.errors[field] = msg; else delete this.errors[field];
+      },
+
+      validate() {
+        ['full_name', 'phone_number', 'nmcn_registration_number', 'government_id_number', 'password']
+          .forEach(f => this.touch(f));
+        return Object.keys(this.errors).length === 0;
+      },
+    }
+  }
+</script>
+
+</body>
+</html>

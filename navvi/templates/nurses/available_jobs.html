@@ -1,0 +1,690 @@
+{% extends "base.html" %}
+{% block title %}Available jobs — Navvi{% endblock %}
+
+{% block content %}
+<div
+  class="relative min-h-[calc(100dvh-4rem)] overflow-hidden"
+  x-data="{
+    jobs: [
+      {% for j in jobs %}
+        {
+          id: '{{ j.id }}',
+          care_type: '{{ j.care_type }}',
+          latitude: '{{ j.latitude }}',
+          longitude: '{{ j.longitude }}',
+          landmark: '{{ j.landmark|escapejs }}',
+          requested_appointment_time: '{{ j.requested_appointment_time|date:'c' }}',
+          duration_type: '{{ j.duration_type }}'
+        },
+      {% endfor %}
+    ],
+
+    busyId: null,
+    lastUpdated: new Date(),
+    filter: 'all',
+    showFilters: false,
+
+    poll() {
+      fetch('{% url 'available_jobs' %}?format=json', {
+        headers: {
+          'X-Requested-With': 'XMLHttpRequest'
+        }
+      })
+      .then(r => r.json())
+      .then(data => {
+        const incoming = data.jobs.map(j => j.id);
+        const known = this.jobs.map(j => j.id);
+
+        const newOnes = incoming.filter(id => !known.includes(id));
+
+        if (newOnes.length && known.length) {
+          toast(
+            `${newOnes.length} new job${newOnes.length > 1 ? 's' : ''} available`,
+            'success'
+          );
+        }
+
+        this.jobs = data.jobs;
+        this.lastUpdated = new Date();
+      })
+      .catch(() => {});
+    },
+
+    claim(job) {
+      this.busyId = job.id;
+
+      navviFetch(`/bookings/${job.id}/claim/`, {
+        method: 'POST'
+      })
+      .then(r => r.json().then(data => ({
+        ok: r.ok,
+        data
+      })))
+      .then(({ ok, data }) => {
+        this.busyId = null;
+
+        if (ok) {
+          toast('Job claimed! Head to the location.', 'success');
+          this.jobs = this.jobs.filter(j => j.id !== job.id);
+        } else {
+          toast(
+            data.error || 'Could not claim job — it may already be taken.',
+            'error'
+          );
+          this.poll();
+        }
+      })
+      .catch(() => {
+        this.busyId = null;
+        toast('Network error.', 'error');
+      });
+    },
+
+    reject(job) {
+      this.busyId = job.id;
+
+      navviFetch(`/bookings/${job.id}/reject/`, {
+        method: 'POST'
+      })
+      .then(() => {
+        this.busyId = null;
+        this.jobs = this.jobs.filter(j => j.id !== job.id);
+        toast('Job passed.', 'success');
+      })
+      .catch(() => {
+        this.busyId = null;
+      });
+    },
+
+    careLabel(ct) {
+      return {
+        antenatal_care: 'Antenatal Care',
+        wound_dressing: 'Wound Dressing',
+        vitals_check: 'Vitals Check',
+        other: 'Other'
+      }[ct] || ct;
+    },
+
+    careIcon(ct) {
+      return {
+        antenatal_care: 'heart-pulse',
+        wound_dressing: 'bandage',
+        vitals_check: 'activity',
+        other: 'stethoscope'
+      }[ct] || 'briefcase-medical';
+    },
+
+    timeUntil(iso) {
+      const mins = Math.round(
+        (new Date(iso) - new Date()) / 60000
+      );
+
+      if (mins < 0) return 'now';
+      if (mins < 60) return `in ${mins}m`;
+
+      return `in ${Math.round(mins / 60)}h`;
+    },
+
+    exactTime(iso) {
+      return new Date(iso).toLocaleTimeString([], {
+        hour: 'numeric',
+        minute: '2-digit'
+      });
+    },
+
+    dateLabel(iso) {
+      const date = new Date(iso);
+      const today = new Date();
+
+      const sameDay =
+        date.getDate() === today.getDate() &&
+        date.getMonth() === today.getMonth() &&
+        date.getFullYear() === today.getFullYear();
+
+      if (sameDay) return 'Today';
+
+      return date.toLocaleDateString([], {
+        weekday: 'short',
+        month: 'short',
+        day: 'numeric'
+      });
+    },
+
+    durationLabel(duration) {
+      return (duration || 'Flexible')
+        .replaceAll('_', ' ')
+        .replace(/\b\w/g, c => c.toUpperCase());
+    },
+
+    filteredJobs() {
+      if (this.filter === 'all') return this.jobs;
+
+      return this.jobs.filter(job =>
+        job.care_type === this.filter
+      );
+    },
+
+    jobCountFor(type) {
+      if (type === 'all') return this.jobs.length;
+
+      return this.jobs.filter(
+        job => job.care_type === type
+      ).length;
+    },
+
+    init() {
+      setInterval(() => this.poll(), 12000);
+    }
+  }"
+>
+  <!-- Atmospheric background -->
+  <div class="pointer-events-none absolute inset-0 -z-10 overflow-hidden">
+    <div class="absolute -top-40 -right-32 h-96 w-96 rounded-full bg-plum-200/30 blur-3xl"></div>
+    <div class="absolute top-1/3 -left-48 h-[28rem] w-[28rem] rounded-full bg-purple-100/30 blur-3xl"></div>
+    <div class="absolute bottom-0 right-1/4 h-72 w-72 rounded-full bg-plum-100/25 blur-3xl"></div>
+  </div>
+
+  <div class="mx-auto max-w-5xl px-4 py-6 sm:px-6 sm:py-10 lg:px-8">
+
+    <!-- Header -->
+    <section
+      class="relative mb-6 overflow-hidden rounded-[2rem] border border-plum-100/80 bg-white/75 p-5 shadow-[0_24px_80px_rgba(36,27,61,0.07)] backdrop-blur-xl sm:p-7"
+      data-reveal
+    >
+      <!-- Header decoration -->
+      <div class="pointer-events-none absolute -right-10 -top-16 h-44 w-44 rounded-full border-[18px] border-plum-100/50"></div>
+      <div class="pointer-events-none absolute right-10 top-10 h-3 w-3 rounded-full bg-plum-400/60"></div>
+      <div class="pointer-events-none absolute right-20 top-20 h-1.5 w-1.5 rounded-full bg-plum-600/40"></div>
+
+      <div class="relative flex flex-col gap-5 sm:flex-row sm:items-end sm:justify-between">
+
+        <div>
+          <div class="mb-3 flex items-center gap-2">
+            <span class="flex h-8 w-8 items-center justify-center rounded-xl bg-plum-100 text-plum-700">
+              <i data-lucide="radio-tower" class="h-4 w-4"></i>
+            </span>
+
+            <span class="text-[10px] font-bold uppercase tracking-[0.22em] text-plum-600/75">
+              Live dispatch
+            </span>
+
+            <span class="h-1 w-1 rounded-full bg-plum-300"></span>
+
+            <span class="flex items-center gap-1.5 text-[10px] font-medium text-plum-900/40">
+              <span class="relative flex h-2 w-2">
+                <span class="absolute inline-flex h-full w-full animate-ping rounded-full bg-emerald-400 opacity-60"></span>
+                <span class="relative inline-flex h-2 w-2 rounded-full bg-emerald-500"></span>
+              </span>
+              Network online
+            </span>
+          </div>
+
+          <h1 class="font-display text-2xl font-bold tracking-[-0.04em] text-ink sm:text-3xl">
+            Available jobs
+          </h1>
+
+          <p class="mt-1.5 max-w-lg text-xs leading-5 text-plum-900/45 sm:text-sm">
+            Care requests matched to your skills, location and availability.
+          </p>
+        </div>
+
+        <!-- Live status -->
+        <div class="flex items-center gap-3 self-start rounded-2xl border border-plum-100 bg-plum-50/70 px-3.5 py-2.5 sm:self-auto">
+          <div class="flex h-9 w-9 items-center justify-center rounded-xl bg-white shadow-sm">
+            <i data-lucide="refresh-cw" class="h-4 w-4 text-plum-600"></i>
+          </div>
+
+          <div>
+            <p class="text-[9px] font-bold uppercase tracking-[0.18em] text-plum-900/35">
+              Last sync
+            </p>
+
+            <p
+              class="mt-0.5 text-[11px] font-semibold text-plum-800"
+              x-text="lastUpdated.toLocaleTimeString([], { hour: 'numeric', minute: '2-digit', second: '2-digit' })"
+            ></p>
+          </div>
+        </div>
+
+      </div>
+
+      <!-- Stats strip -->
+      <div class="mt-6 grid grid-cols-3 gap-2 border-t border-plum-100/70 pt-4">
+        <div class="rounded-2xl bg-plum-50/70 px-3 py-3">
+          <p class="text-[9px] font-bold uppercase tracking-widest text-plum-900/35">
+            Open
+          </p>
+          <p
+            class="mt-1 font-display text-xl font-bold tracking-tight text-plum-800"
+            x-text="jobs.length"
+          ></p>
+        </div>
+
+        <div class="rounded-2xl bg-white/70 px-3 py-3 ring-1 ring-plum-100/70">
+          <p class="text-[9px] font-bold uppercase tracking-widest text-plum-900/35">
+            Status
+          </p>
+          <div class="mt-1 flex items-center gap-1.5">
+            <span class="h-1.5 w-1.5 rounded-full bg-emerald-500"></span>
+            <p class="text-xs font-bold text-plum-800">Live</p>
+          </div>
+        </div>
+
+        <div class="rounded-2xl bg-white/70 px-3 py-3 ring-1 ring-plum-100/70">
+          <p class="text-[9px] font-bold uppercase tracking-widest text-plum-900/35">
+            Refresh
+          </p>
+          <p class="mt-1 text-xs font-bold text-plum-800">
+            12 sec
+          </p>
+        </div>
+      </div>
+    </section>
+
+    <!-- Filter / toolbar -->
+    <section class="mb-4" data-reveal>
+      <div class="flex items-center justify-between gap-3">
+
+        <div class="min-w-0">
+          <p class="text-[10px] font-bold uppercase tracking-[0.2em] text-plum-900/30">
+            Incoming care
+          </p>
+
+          <p class="mt-1 text-sm font-semibold text-plum-900/75">
+            <span x-text="filteredJobs().length"></span>
+            request<span x-show="filteredJobs().length !== 1">s</span>
+            waiting
+          </p>
+        </div>
+
+        <button
+          type="button"
+          @click="showFilters = !showFilters"
+          class="group flex shrink-0 items-center gap-2 rounded-xl border border-plum-100 bg-white/80 px-3.5 py-2.5 text-[11px] font-semibold text-plum-800 shadow-sm transition-all hover:border-plum-200 hover:bg-plum-50"
+        >
+          <i data-lucide="sliders-horizontal" class="h-3.5 w-3.5"></i>
+          Filter
+          <i
+            data-lucide="chevron-down"
+            class="h-3 w-3 transition-transform"
+            :class="showFilters ? 'rotate-180' : ''"
+          ></i>
+        </button>
+      </div>
+
+      <!-- Filters -->
+      <div
+        x-show="showFilters"
+        x-transition
+        class="mt-3 overflow-hidden rounded-2xl border border-plum-100 bg-white/80 p-2 shadow-lg shadow-plum-900/5 backdrop-blur-xl"
+      >
+        <div class="flex gap-1.5 overflow-x-auto pb-0.5">
+
+          <button
+            type="button"
+            @click="filter = 'all'"
+            class="flex shrink-0 items-center gap-2 rounded-xl px-3 py-2 text-[10px] font-bold transition-all"
+            :class="filter === 'all'
+              ? 'bg-plum-700 text-white shadow-md shadow-plum-700/20'
+              : 'text-plum-900/50 hover:bg-plum-50'"
+          >
+            All
+            <span
+              class="rounded-full px-1.5 py-0.5 text-[9px]"
+              :class="filter === 'all' ? 'bg-white/15 text-white' : 'bg-plum-50 text-plum-600'"
+              x-text="jobCountFor('all')"
+            ></span>
+          </button>
+
+          <button
+            type="button"
+            @click="filter = 'antenatal_care'"
+            class="flex shrink-0 items-center gap-2 rounded-xl px-3 py-2 text-[10px] font-bold transition-all"
+            :class="filter === 'antenatal_care'
+              ? 'bg-plum-700 text-white shadow-md shadow-plum-700/20'
+              : 'text-plum-900/50 hover:bg-plum-50'"
+          >
+            Antenatal
+            <span
+              class="rounded-full px-1.5 py-0.5 text-[9px]"
+              :class="filter === 'antenatal_care' ? 'bg-white/15 text-white' : 'bg-plum-50 text-plum-600'"
+              x-text="jobCountFor('antenatal_care')"
+            ></span>
+          </button>
+
+          <button
+            type="button"
+            @click="filter = 'wound_dressing'"
+            class="flex shrink-0 items-center gap-2 rounded-xl px-3 py-2 text-[10px] font-bold transition-all"
+            :class="filter === 'wound_dressing'
+              ? 'bg-plum-700 text-white shadow-md shadow-plum-700/20'
+              : 'text-plum-900/50 hover:bg-plum-50'"
+          >
+            Wound care
+            <span
+              class="rounded-full px-1.5 py-0.5 text-[9px]"
+              :class="filter === 'wound_dressing' ? 'bg-white/15 text-white' : 'bg-plum-50 text-plum-600'"
+              x-text="jobCountFor('wound_dressing')"
+            ></span>
+          </button>
+
+          <button
+            type="button"
+            @click="filter = 'vitals_check'"
+            class="flex shrink-0 items-center gap-2 rounded-xl px-3 py-2 text-[10px] font-bold transition-all"
+            :class="filter === 'vitals_check'
+              ? 'bg-plum-700 text-white shadow-md shadow-plum-700/20'
+              : 'text-plum-900/50 hover:bg-plum-50'"
+          >
+            Vitals
+            <span
+              class="rounded-full px-1.5 py-0.5 text-[9px]"
+              :class="filter === 'vitals_check' ? 'bg-white/15 text-white' : 'bg-plum-50 text-plum-600'"
+              x-text="jobCountFor('vitals_check')"
+            ></span>
+          </button>
+
+        </div>
+      </div>
+    </section>
+
+    <!-- Empty state -->
+    <template x-if="filteredJobs().length === 0">
+      <section
+        class="relative overflow-hidden rounded-[2rem] border border-plum-100 bg-white/75 p-8 text-center shadow-[0_24px_70px_rgba(36,27,61,0.06)] backdrop-blur-xl sm:p-14"
+        data-reveal
+      >
+        <div class="absolute inset-x-0 top-0 h-1 bg-gradient-to-r from-transparent via-plum-500 to-transparent"></div>
+
+        <div class="mx-auto flex h-16 w-16 items-center justify-center rounded-[1.4rem] bg-plum-50 ring-8 ring-plum-50/50">
+          <i data-lucide="inbox" class="h-7 w-7 text-plum-400"></i>
+        </div>
+
+        <p class="mt-6 font-display text-lg font-bold tracking-tight text-plum-900">
+          The queue is clear
+        </p>
+
+        <p class="mx-auto mt-2 max-w-sm text-xs leading-5 text-plum-900/40">
+          No jobs matching your skills are available right now.
+          Keep Navvi open — new care requests will appear automatically.
+        </p>
+
+        <div class="mx-auto mt-6 flex w-fit items-center gap-2 rounded-full bg-plum-50 px-3 py-2">
+          <span class="relative flex h-2 w-2">
+            <span class="absolute inline-flex h-full w-full animate-ping rounded-full bg-plum-400 opacity-50"></span>
+            <span class="relative inline-flex h-2 w-2 rounded-full bg-plum-500"></span>
+          </span>
+
+          <span class="text-[10px] font-bold uppercase tracking-widest text-plum-600">
+            Listening for jobs
+          </span>
+        </div>
+      </section>
+    </template>
+
+    <!-- Jobs -->
+    <div class="space-y-3">
+
+      <template x-for="(job, index) in filteredJobs()" :key="job.id">
+        <article
+          class="group relative overflow-hidden rounded-[1.6rem] border border-plum-100/80 bg-white/80 shadow-[0_12px_45px_rgba(36,27,61,0.055)] backdrop-blur-xl transition-all duration-300 hover:-translate-y-0.5 hover:border-plum-200 hover:shadow-[0_20px_60px_rgba(36,27,61,0.09)]"
+          data-reveal
+        >
+
+          <!-- Accent rail -->
+          <div class="absolute inset-y-0 left-0 w-1 bg-gradient-to-b from-plum-400 via-plum-600 to-plum-800"></div>
+
+          <!-- Top glow -->
+          <div class="pointer-events-none absolute -right-20 -top-20 h-40 w-40 rounded-full bg-plum-100/40 blur-3xl transition-all duration-500 group-hover:bg-plum-200/50"></div>
+
+          <div class="relative p-4 sm:p-5">
+
+            <!-- Job identity -->
+            <div class="flex items-start justify-between gap-4">
+
+              <div class="flex min-w-0 items-center gap-3">
+
+                <div class="flex h-11 w-11 shrink-0 items-center justify-center rounded-2xl bg-plum-50 text-plum-600 ring-1 ring-plum-100 transition-transform duration-300 group-hover:scale-105">
+                  <i
+                    :data-lucide="careIcon(job.care_type)"
+                    class="h-5 w-5"
+                  ></i>
+                </div>
+
+                <div class="min-w-0">
+                  <div class="flex flex-wrap items-center gap-2">
+
+                    <span
+                      class="rounded-full bg-plum-100 px-2.5 py-1 text-[9px] font-bold uppercase tracking-wide text-plum-700"
+                      x-text="careLabel(job.care_type)"
+                    ></span>
+
+                    <span class="flex items-center gap-1 rounded-full bg-emerald-50 px-2 py-1 text-[9px] font-bold text-emerald-700">
+                      <span class="h-1.5 w-1.5 rounded-full bg-emerald-500"></span>
+                      Open
+                    </span>
+
+                  </div>
+
+                  <p class="mt-1.5 truncate text-[11px] text-plum-900/45">
+                    Care request · <span x-text="'#' + String(job.id).slice(-6)"></span>
+                  </p>
+                </div>
+
+              </div>
+
+              <!-- Urgency -->
+              <div class="shrink-0 text-right">
+
+                <div
+                  class="inline-flex items-center gap-1.5 rounded-xl bg-plum-50 px-2.5 py-2"
+                >
+                  <i data-lucide="clock-3" class="h-3.5 w-3.5 text-plum-500"></i>
+
+                  <span
+                    class="text-[11px] font-bold text-plum-700"
+                    x-text="timeUntil(job.requested_appointment_time)"
+                  ></span>
+                </div>
+
+              </div>
+
+            </div>
+
+            <!-- Information grid -->
+            <div class="mt-5 grid grid-cols-1 gap-2 sm:grid-cols-3">
+
+              <!-- Location -->
+              <div class="rounded-2xl border border-plum-100/70 bg-plum-50/45 p-3">
+                <div class="flex items-center gap-2">
+                  <span class="flex h-7 w-7 items-center justify-center rounded-lg bg-white text-plum-500 shadow-sm">
+                    <i data-lucide="map-pin" class="h-3.5 w-3.5"></i>
+                  </span>
+
+                  <div class="min-w-0">
+                    <p class="text-[8px] font-bold uppercase tracking-[0.18em] text-plum-900/30">
+                      Location
+                    </p>
+
+                    <p
+                      class="mt-0.5 truncate text-[10px] font-semibold text-plum-900/65"
+                      x-text="job.landmark || 'Location shared on claim'"
+                    ></p>
+                  </div>
+                </div>
+              </div>
+
+              <!-- Appointment -->
+              <div class="rounded-2xl border border-plum-100/70 bg-white/70 p-3">
+                <div class="flex items-center gap-2">
+                  <span class="flex h-7 w-7 items-center justify-center rounded-lg bg-plum-50 text-plum-500">
+                    <i data-lucide="calendar-days" class="h-3.5 w-3.5"></i>
+                  </span>
+
+                  <div>
+                    <p class="text-[8px] font-bold uppercase tracking-[0.18em] text-plum-900/30">
+                      Appointment
+                    </p>
+
+                    <p
+                      class="mt-0.5 text-[10px] font-semibold text-plum-900/65"
+                      x-text="dateLabel(job.requested_appointment_time)"
+                    ></p>
+                  </div>
+                </div>
+              </div>
+
+              <!-- Duration -->
+              <div class="rounded-2xl border border-plum-100/70 bg-white/70 p-3">
+                <div class="flex items-center gap-2">
+                  <span class="flex h-7 w-7 items-center justify-center rounded-lg bg-plum-50 text-plum-500">
+                    <i data-lucide="timer" class="h-3.5 w-3.5"></i>
+                  </span>
+
+                  <div>
+                    <p class="text-[8px] font-bold uppercase tracking-[0.18em] text-plum-900/30">
+                      Duration
+                    </p>
+
+                    <p
+                      class="mt-0.5 text-[10px] font-semibold capitalize text-plum-900/65"
+                      x-text="durationLabel(job.duration_type)"
+                    ></p>
+                  </div>
+                </div>
+              </div>
+
+            </div>
+
+            <!-- Appointment time -->
+            <div class="mt-3 flex items-center justify-between rounded-2xl border border-plum-100 bg-white/60 px-3.5 py-3">
+
+              <div class="flex items-center gap-2.5">
+                <span class="flex h-7 w-7 items-center justify-center rounded-lg bg-plum-700 text-white shadow-sm shadow-plum-700/20">
+                  <i data-lucide="calendar-clock" class="h-3.5 w-3.5"></i>
+                </span>
+
+                <div>
+                  <p class="text-[8px] font-bold uppercase tracking-[0.18em] text-plum-900/30">
+                    Requested time
+                  </p>
+
+                  <p
+                    class="mt-0.5 text-[11px] font-bold text-plum-800"
+                    x-text="exactTime(job.requested_appointment_time)"
+                  ></p>
+                </div>
+              </div>
+
+              <div class="hidden items-center gap-1.5 sm:flex">
+                <i data-lucide="shield-check" class="h-3.5 w-3.5 text-plum-400"></i>
+                <span class="text-[9px] font-medium text-plum-900/35">
+                  Navvi verified request
+                </span>
+              </div>
+
+            </div>
+
+            <!-- Actions -->
+            <div class="mt-4 grid grid-cols-[0.72fr_1.28fr] gap-2.5">
+
+              <button
+                type="button"
+                @click="reject(job)"
+                :disabled="busyId === job.id"
+                class="group/pass relative overflow-hidden rounded-2xl border border-plum-100 bg-white/80 px-4 py-3.5 text-[11px] font-bold text-plum-900/55 transition-all duration-200 hover:border-plum-200 hover:bg-plum-50 hover:text-plum-700 active:scale-[0.98] disabled:cursor-not-allowed disabled:opacity-40"
+              >
+                <span class="relative flex items-center justify-center gap-2">
+                  <i data-lucide="x" class="h-3.5 w-3.5"></i>
+                  Pass
+                </span>
+              </button>
+
+              <button
+                type="button"
+                @click="claim(job)"
+                :disabled="busyId === job.id"
+                class="group/claim relative overflow-hidden rounded-2xl bg-gradient-to-br from-plum-600 via-plum-700 to-plum-800 px-4 py-3.5 text-[11px] font-bold text-white shadow-lg shadow-plum-700/20 transition-all duration-300 hover:-translate-y-0.5 hover:shadow-xl hover:shadow-plum-700/30 active:scale-[0.98] disabled:cursor-not-allowed disabled:opacity-60"
+              >
+
+                <!-- Button shine -->
+                <span class="pointer-events-none absolute inset-0 -translate-x-full bg-gradient-to-r from-transparent via-white/10 to-transparent transition-transform duration-700 group-hover/claim:translate-x-full"></span>
+
+                <span class="relative flex items-center justify-center gap-2">
+
+                  <i
+                    x-show="busyId !== job.id"
+                    data-lucide="navigation"
+                    class="h-3.5 w-3.5"
+                  ></i>
+
+                  <i
+                    x-show="busyId === job.id"
+                    data-lucide="loader-circle"
+                    class="h-3.5 w-3.5 animate-spin"
+                  ></i>
+
+                  <span
+                    x-text="busyId === job.id ? 'Claiming…' : 'Claim job'"
+                  ></span>
+
+                  <i
+                    x-show="busyId !== job.id"
+                    data-lucide="arrow-up-right"
+                    class="h-3 w-3 opacity-60 transition-transform group-hover/claim:translate-x-0.5 group-hover/claim:-translate-y-0.5"
+                  ></i>
+
+                </span>
+              </button>
+
+            </div>
+
+          </div>
+
+          <!-- Bottom metadata -->
+          <div class="flex items-center justify-between border-t border-plum-100/70 bg-plum-50/25 px-4 py-2.5 sm:px-5">
+
+            <div class="flex items-center gap-1.5">
+              <i data-lucide="activity" class="h-3 w-3 text-plum-400"></i>
+              <span class="text-[8px] font-bold uppercase tracking-[0.16em] text-plum-900/30">
+                Live dispatch
+              </span>
+            </div>
+
+            <span
+              class="text-[9px] font-medium text-plum-900/30"
+              x-text="'Request ' + String(index + 1).padStart(2, '0')"
+            ></span>
+
+          </div>
+
+        </article>
+      </template>
+
+    </div>
+
+    <!-- Footer pulse -->
+    <div
+      x-show="jobs.length > 0"
+      class="mt-6 flex items-center justify-center gap-2"
+      data-reveal
+    >
+      <span class="h-px w-10 bg-gradient-to-r from-transparent to-plum-200"></span>
+
+      <span class="flex items-center gap-1.5 rounded-full border border-plum-100 bg-white/70 px-3 py-1.5">
+        <span class="relative flex h-1.5 w-1.5">
+          <span class="absolute inline-flex h-full w-full animate-ping rounded-full bg-plum-400 opacity-60"></span>
+          <span class="relative inline-flex h-1.5 w-1.5 rounded-full bg-plum-500"></span>
+        </span>
+
+        <span class="text-[8px] font-bold uppercase tracking-[0.2em] text-plum-900/35">
+          Waiting for next request
+        </span>
+      </span>
+
+      <span class="h-px w-10 bg-gradient-to-l from-transparent to-plum-200"></span>
+    </div>
+
+  </div>
+</div>
+{% endblock %}

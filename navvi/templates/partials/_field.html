@@ -1,0 +1,42 @@
+{% comment %}
+Usage:
+  {% include "partials/_field.html" with name="full_name" label="Full name" type="text" value=data.full_name error=errors.full_name placeholder="Adaeze Okafor" %}
+
+Params:
+  name (required)   — field name, used for id/name/x-model target
+  label (required)  — visible label text
+  type              — text | tel | number | date | datetime-local | password | textarea (default: text)
+  value             — repopulated value from `data.<field>` on validation failure
+  error             — server-side error string from `errors.<field>`
+  placeholder       — placeholder text
+  autocomplete      — autocomplete attribute
+  help              — helper text shown when there's no error
+  required          — pass required=True to mark the field required
+{% endcomment %}
+<div>
+  <label for="{{ name }}" class="block text-sm font-medium mb-1.5">{{ label }}</label>
+
+  {% if type == "textarea" %}
+  <textarea
+    id="{{ name }}" name="{{ name }}" rows="4"
+    class="field-input{% if error %} field-error{% endif %}"
+    placeholder="{{ placeholder }}"
+    {% if required %}required{% endif %}
+  >{{ value|default:"" }}</textarea>
+  {% else %}
+  <input
+    type="{{ type|default:'text' }}" id="{{ name }}" name="{{ name }}"
+    value="{{ value|default:'' }}"
+    autocomplete="{{ autocomplete|default:'off' }}"
+    class="field-input{% if error %} field-error{% endif %}"
+    placeholder="{{ placeholder }}"
+    {% if required %}required{% endif %}
+  >
+  {% endif %}
+
+  {% if error %}
+    <p class="mt-1.5 text-xs text-[#D9455F]">{{ error }}</p>
+  {% elif help %}
+    <p class="mt-1.5 text-xs text-plum-900/40">{{ help }}</p>
+  {% endif %}
+</div>

@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Log in — Navvi</title>
+<title>Register — Navvi</title>
 <script src="https://cdn.tailwindcss.com"></script>
 <script defer src="https://cdnjs.cloudflare.com/ajax/libs/alpinejs/3.13.5/cdn.min.js"></script>
 <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -81,12 +81,6 @@
   }
   .float-slow { animation: float 6s ease-in-out infinite; }
 
-  @keyframes pulseDot {
-    0%, 100% { opacity: 1; }
-    50% { opacity: 0.35; }
-  }
-  .pulse-dot { animation: pulseDot 1.6s ease-in-out infinite; }
-
   input:focus { outline: none; }
   .field-input {
     width: 100%;
@@ -117,7 +111,7 @@
 <body class="text-ink antialiased min-h-screen">
 <div class="bg-blobs" aria-hidden="true"></div>
 
-<div x-data="loginForm()" class="min-h-screen flex flex-col">
+<div x-data="patientRegisterForm()" class="min-h-screen flex flex-col">
 
   <!-- ============ HEADER ============ -->
   <header class="border-b border-white/60 glass-header">
@@ -125,12 +119,9 @@
       <a href="/" class="font-display font-700 text-xl tracking-tight text-ink">
         navvi<span class="text-plum-600">.</span>
       </a>
-      <div class="text-sm font-medium text-plum-900/60">
-        New here?
-        <a href="{% url 'nurse_register' %}" class="text-plum-600 font-semibold">Register as a nurse</a>
-        <span class="text-plum-900/30 mx-1">·</span>
-        <a href="{% url 'patient_register' %}" class="text-plum-600 font-semibold">Book care</a>
-      </div>
+      <a href="{% url 'nurse_register' %}" class="text-sm font-medium text-plum-900/60 hover:text-plum-600 transition-colors">
+        Are you a nurse? <span class="text-plum-600 font-semibold">Register to work</span>
+      </a>
     </div>
   </header>
 
@@ -140,87 +131,100 @@
       <!-- ============ SIDE PANEL (desktop only) ============ -->
       <aside class="hidden lg:block lg:col-span-2">
         <div class="sticky top-16">
-          <p class="text-sm font-semibold text-plum-600 mb-3">Welcome back</p>
+          <p class="text-sm font-semibold text-plum-600 mb-3">For patients and families</p>
           <h1 class="font-display text-4xl font-700 leading-tight">
-            Good to see you again.
+            Book a verified nurse in minutes.
           </h1>
           <p class="mt-4 text-plum-900/60 max-w-sm">
-            Log in to claim jobs, track a booking, or check on a payout — whichever side of Navvi you're on.
+            Whether it's care for yourself or for a relative back home, every nurse on Navvi is license-verified before they can accept your request.
           </p>
 
+          <div class="mt-10 space-y-4">
+            <div class="flex gap-3 items-start">
+              <span class="text-plum-600 font-display text-lg leading-none mt-0.5">•</span>
+              <p class="text-sm text-plum-900/60">Payment is held in escrow until the visit is confirmed complete.</p>
+            </div>
+            <div class="flex gap-3 items-start">
+              <span class="text-plum-600 font-display text-lg leading-none mt-0.5">•</span>
+              <p class="text-sm text-plum-900/60">Booking for a relative from abroad? Turn on diaspora booking below.</p>
+            </div>
+            <div class="flex gap-3 items-start">
+              <span class="text-plum-600 font-display text-lg leading-none mt-0.5">•</span>
+              <p class="text-sm text-plum-900/60">Vitals are monitored against clinical thresholds during every visit.</p>
+            </div>
+          </div>
+
           <div class="float-slow hover-lift mt-10 glass-panel rounded-3xl p-5 max-w-sm">
-            <div class="flex items-center justify-between mb-3">
-              <span class="text-xs font-semibold text-plum-900/50 tracking-wide">Jobs near Lagos</span>
-              <span class="flex items-center gap-1.5 text-xs font-semibold text-plum-600">
-                <span class="w-1.5 h-1.5 rounded-full bg-plum-600 pulse-dot"></span> Live
-              </span>
-            </div>
-            <div class="space-y-2.5">
-              <div class="flex items-center gap-3 bg-white rounded-2xl px-3.5 py-3">
-                <div class="w-8 h-8 shrink-0 rounded-full bg-plum-600 text-white flex items-center justify-center font-display text-xs font-600">AO</div>
-                <div class="min-w-0 flex-1">
-                  <p class="text-sm font-semibold truncate">Antenatal visit accepted</p>
-                  <p class="text-xs text-plum-900/50">Lekki Phase 1</p>
-                </div>
-                <p class="text-sm font-semibold text-plum-700 shrink-0">₦4,500</p>
+            <div class="flex items-center gap-3 pb-3 border-b border-plum-100">
+              <div class="w-9 h-9 rounded-full bg-plum-600 text-white flex items-center justify-center font-display text-sm font-600">CB</div>
+              <div>
+                <p class="font-semibold text-sm">Chidinma B.</p>
+                <p class="text-xs text-plum-900/50">Antenatal care · Verified nurse</p>
               </div>
-              <div class="flex items-center gap-3 bg-white rounded-2xl px-3.5 py-3">
-                <div class="w-8 h-8 shrink-0 rounded-full bg-plum-600 text-white flex items-center justify-center font-display text-xs font-600">TB</div>
-                <div class="min-w-0 flex-1">
-                  <p class="text-sm font-semibold truncate">Wound dressing requested</p>
-                  <p class="text-xs text-plum-900/50">Ikeja GRA</p>
-                </div>
-                <p class="text-sm font-semibold text-plum-700 shrink-0">₦3,800</p>
-              </div>
+              <span class="ml-auto text-[11px] font-semibold text-plum-600 bg-white px-2 py-1 rounded-full">On the way</span>
             </div>
+            <p class="pt-3 text-xs text-plum-900/60">Payment held in escrow · Visit today, 2:00 PM</p>
           </div>
         </div>
       </aside>
 
       <!-- ============ FORM ============ -->
-      <div class="lg:col-span-3 max-w-md w-full mx-auto lg:mx-0">
+      <div class="lg:col-span-3">
         <div class="lg:hidden mb-8">
-          <p class="text-sm font-semibold text-plum-600 mb-2">Welcome back</p>
-          <h1 class="font-display text-3xl font-700 leading-tight">Log in</h1>
+          <p class="text-sm font-semibold text-plum-600 mb-2">For patients and families</p>
+          <h1 class="font-display text-3xl font-700 leading-tight">Create your account</h1>
+          <p class="mt-2 text-plum-900/60 text-sm">Book your first verified home visit right after.</p>
         </div>
 
         <!-- Form -->
-        <form method="post" action="{% url 'login' %}"
-              x-init="{% if error %}shakeError = true; setTimeout(() => shakeError = false, 500){% endif %}"
+        <form method="post" action="{% url 'patient_register' %}"
+              x-init="{% if errors %}shakeError = true; setTimeout(() => shakeError = false, 500){% endif %}"
               @submit="if (!validate()) { $event.preventDefault(); } else { submitting = true; }"
               novalidate class="glass-card rounded-3xl p-6 sm:p-7 space-y-5">
           {% csrf_token %}
 
-          {% if error %}
+          {% if errors %}
           <div class="bg-[#FDF0F2] border border-[#F5C8D0] text-[#B33A50] text-sm rounded-2xl px-4 py-3" :class="shakeError && 'shake'">
-            {{ error }}
+            Please fix the highlighted fields and try again.
           </div>
           {% endif %}
+
+          <!-- Full name -->
+          <div>
+            <label for="full_name" class="block text-sm font-medium mb-1.5">Full name</label>
+            <input
+              type="text" id="full_name" name="full_name" autocomplete="name"
+              x-model="fields.full_name" @blur="touch('full_name')" value="{{ data.full_name|default:'' }}"
+              class="field-input" :class="errors.full_name && 'field-error'"
+              placeholder="Chidinma Balogun"
+            >
+            <p x-show="errors.full_name" x-cloak class="mt-1.5 text-xs text-[#D9455F]" x-text="errors.full_name"></p>
+            {% if errors.full_name %}<p class="mt-1.5 text-xs text-[#D9455F]">{{ errors.full_name }}</p>{% endif %}
+          </div>
 
           <!-- Phone number -->
           <div>
             <label for="phone_number" class="block text-sm font-medium mb-1.5">Phone number</label>
             <input
               type="tel" id="phone_number" name="phone_number" autocomplete="tel"
-              x-model="fields.phone_number" @blur="touch('phone_number')"
+              x-model="fields.phone_number" @blur="touch('phone_number')" value="{{ data.phone_number|default:'' }}"
               class="field-input" :class="errors.phone_number && 'field-error'"
               placeholder="0803 123 4567"
             >
             <p x-show="errors.phone_number" x-cloak class="mt-1.5 text-xs text-[#D9455F]" x-text="errors.phone_number"></p>
+            {% if errors.phone_number %}<p class="mt-1.5 text-xs text-[#D9455F]">{{ errors.phone_number }}</p>{% endif %}
+            <p x-show="!errors.phone_number" class="mt-1.5 text-xs text-plum-900/40">This doubles as your login.</p>
           </div>
 
           <!-- Password -->
           <div>
-            <div class="flex items-center justify-between mb-1.5">
-              <label for="password" class="block text-sm font-medium">Password</label>
-              <a href="#" class="text-xs font-semibold text-plum-600">Forgot password?</a>
-            </div>
+            <label for="password" class="block text-sm font-medium mb-1.5">Password</label>
             <div class="relative">
               <input
-                :type="showPassword ? 'text' : 'password'" id="password" name="password" autocomplete="current-password"
-                x-model="fields.password" @blur="touch('password')"
+                :type="showPassword ? 'text' : 'password'" id="password" name="password" autocomplete="new-password"
+                x-model="fields.password" @blur="touch('password')" @input="touch('password')"
                 class="field-input pr-12" :class="errors.password && 'field-error'"
-                placeholder="Enter your password"
+                placeholder="At least 8 characters"
               >
               <button type="button" @click="showPassword = !showPassword"
                 class="absolute right-3.5 top-1/2 -translate-y-1/2 text-xs font-semibold text-plum-600">
@@ -228,11 +232,21 @@
               </button>
             </div>
             <p x-show="errors.password" x-cloak class="mt-1.5 text-xs text-[#D9455F]" x-text="errors.password"></p>
+
+            <div class="mt-2 flex gap-1.5" x-show="fields.password.length > 0">
+              <div class="h-1 flex-1 rounded-full" :class="strength >= 1 ? 'bg-plum-600' : 'bg-plum-100'"></div>
+              <div class="h-1 flex-1 rounded-full" :class="strength >= 2 ? 'bg-plum-600' : 'bg-plum-100'"></div>
+              <div class="h-1 flex-1 rounded-full" :class="strength >= 3 ? 'bg-plum-600' : 'bg-plum-100'"></div>
+            </div>
           </div>
 
-          <label class="flex items-center gap-2.5 cursor-pointer">
-            <input type="checkbox" x-model="fields.remember" class="w-4 h-4 accent-plum-600 rounded">
-            <span class="text-sm text-plum-900/70">Keep me logged in</span>
+          <!-- Diaspora booker toggle -->
+          <label class="flex items-start gap-3 glass-panel rounded-2xl px-4 py-3.5 cursor-pointer">
+            <input type="checkbox" name="is_diaspora_booker" value="true" x-model="fields.is_diaspora_booker" class="mt-0.5 w-4 h-4 accent-plum-600 rounded">
+            <span>
+              <span class="block text-sm font-medium">I'm usually booking care for someone else</span>
+              <span class="block text-xs text-plum-900/50 mt-0.5">For family abroad arranging care for a relative in Nigeria.</span>
+            </span>
           </label>
 
           <button
@@ -240,23 +254,17 @@
             :disabled="submitting"
             class="w-full font-semibold bg-ink text-white px-6 py-3.5 rounded-full hover:bg-plum-700 transition-colors disabled:opacity-50"
           >
-            <span x-show="!submitting">Log in</span>
-            <span x-show="submitting" x-cloak>Logging in…</span>
+            <span x-show="!submitting">Create account</span>
+            <span x-show="submitting" x-cloak>Creating your account…</span>
           </button>
 
-          <div class="grid grid-cols-1 gap-3 pt-4 border-t border-plum-100">
-            <p class="text-sm text-center text-plum-900/60">
-              New to Navvi?
-            </p>
-            <div class="grid grid-cols-2 gap-3">
-              <a href="{% url 'nurse_register' %}" class="text-center text-sm font-semibold border border-plum-300 text-plum-900 px-4 py-3 rounded-full hover:border-plum-600 hover:text-plum-600 transition-colors">
-                Register as a nurse
-              </a>
-              <a href="{% url 'patient_register' %}" class="text-center text-sm font-semibold border border-plum-300 text-plum-900 px-4 py-3 rounded-full hover:border-plum-600 hover:text-plum-600 transition-colors">
-                Book care
-              </a>
-            </div>
-          </div>
+          <p class="text-xs text-plum-900/40 text-center leading-relaxed">
+            By registering, you agree to Navvi's Terms of Service and Privacy Policy.
+          </p>
+
+          <p class="text-sm text-center text-plum-900/60 pt-2">
+            Already have an account? <a href="{% url 'login' %}" class="font-semibold text-plum-600">Log in</a>
+          </p>
         </form>
       </div>
     </div>
@@ -264,28 +272,42 @@
 </div>
 
 <script>
-  function loginForm() {
+  function patientRegisterForm() {
     return {
       fields: {
+        full_name: '',
         phone_number: '',
         password: '',
-        remember: false,
+        is_diaspora_booker: false,
       },
       errors: {},
       submitting: false,
       showPassword: false,
       shakeError: false,
 
+      get strength() {
+        const p = this.fields.password;
+        let score = 0;
+        if (p.length >= 8) score++;
+        if (/[A-Z]/.test(p) && /[0-9]/.test(p)) score++;
+        if (p.length >= 12 || /[^A-Za-z0-9]/.test(p)) score++;
+        return score;
+      },
+
       touch(field) {
         const v = this.fields[field];
         let msg = '';
-        if (field === 'phone_number' && !v.trim()) msg = 'Enter your phone number.';
-        if (field === 'password' && !v) msg = 'Enter your password.';
+        if (field === 'full_name' && !v.trim()) msg = 'Enter your full name.';
+        if (field === 'phone_number') {
+          if (!v.trim()) msg = 'Enter a phone number.';
+          else if (!/^[0-9+\s]{7,15}$/.test(v.trim())) msg = 'Enter a valid phone number.';
+        }
+        if (field === 'password' && v.length < 8) msg = 'Password must be at least 8 characters.';
         if (msg) this.errors[field] = msg; else delete this.errors[field];
       },
 
       validate() {
-        ['phone_number', 'password'].forEach(f => this.touch(f));
+        ['full_name', 'phone_number', 'password'].forEach(f => this.touch(f));
         return Object.keys(this.errors).length === 0;
       },
     }

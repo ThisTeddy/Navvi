@@ -57,7 +57,7 @@ INSTALLED_APPS = [
     "django.contrib.sessions",
     "django.contrib.messages",
     "django.contrib.staticfiles",
-
+    'django.contrib.humanize',
     "navvi",  # single app for now — split into accounts/nurses/bookings/etc. later
 ]
 

@@ -3,200 +3,648 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Navvi — Trusted home care, on demand</title>
-<link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,400;9..144,500;9..144,600;9..144,700&family=Work+Sans:wght@400;500;600&display=swap" rel="stylesheet">
+<title>Navvi — Nursing work, on your terms</title>
 <script src="https://cdn.tailwindcss.com"></script>
+<script defer src="https://cdnjs.cloudflare.com/ajax/libs/alpinejs/3.13.5/cdn.min.js"></script>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@500;600;700&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
 <script>
   tailwind.config = {
     theme: {
       extend: {
         colors: {
-          bg: '#EFF3EC',
-          ink: '#16211D',
-          muted: '#5B6B63',
-          border: '#D8E0DA',
-          primary: '#1B4B43',
-          primaryDark: '#102E29',
-          accent: '#E8A33D',
-          alert: '#C1553D',
+          ink: '#1C1730',
+          plum: {
+            50:  '#F6F4FD',
+            100: '#ECE7FB',
+            200: '#D9CFF6',
+            300: '#BBA9EE',
+            400: '#9C86E0',
+            500: '#7E63D3',
+            600: '#6A4FC4',
+            700: '#5A3FAA',
+            800: '#493488',
+            900: '#241B3D',
+          },
         },
         fontFamily: {
-          display: ['Fraunces', 'serif'],
-          body: ['Work Sans', 'sans-serif'],
+          display: ['"Space Grotesk"', 'sans-serif'],
+          body: ['"Inter"', 'sans-serif'],
         },
       },
     },
-  };
+  }
 </script>
-<script src="https://unpkg.com/alpinejs@3.x.x/dist/cdn.min.js" defer></script>
 <style>
-  body { font-family: 'Work Sans', sans-serif; }
-  h1, h2, h3, .font-display { font-family: 'Fraunces', serif; }
+
+  /* ---------- Ambient background blobs ---------- */
+  .bg-blobs { position: fixed; inset: 0; z-index: -1; overflow: hidden; pointer-events: none; }
+  .bg-blobs::before, .bg-blobs::after {
+    content: ''; position: absolute; border-radius: 9999px; filter: blur(90px); opacity: 0.35;
+  }
+  .bg-blobs::before {
+    width: 32rem; height: 32rem; top: -10rem; right: -8rem;
+    background: radial-gradient(circle, #BBA9EE, transparent 70%);
+  }
+  .bg-blobs::after {
+    width: 26rem; height: 26rem; bottom: -8rem; left: -6rem;
+    background: radial-gradient(circle, #D9CFF6, transparent 70%);
+  }
+
+  /* ---------- Glass surfaces ---------- */
+  .glass-card {
+    background: rgba(255, 255, 255, 0.68);
+    backdrop-filter: blur(24px) saturate(160%);
+    -webkit-backdrop-filter: blur(24px) saturate(160%);
+    border: 1px solid rgba(255, 255, 255, 0.9);
+    box-shadow: 0 12px 40px -16px rgba(90, 63, 170, 0.22);
+  }
+  .glass-panel {
+    background: rgba(246, 244, 253, 0.55);
+    backdrop-filter: blur(20px) saturate(150%);
+    -webkit-backdrop-filter: blur(20px) saturate(150%);
+    border: 1px solid rgba(255, 255, 255, 0.75);
+  }
+  .glass-header {
+    background: rgba(255, 255, 255, 0.6);
+    backdrop-filter: blur(20px) saturate(160%);
+    -webkit-backdrop-filter: blur(20px) saturate(160%);
+  }
+  html { scroll-behavior: smooth; }
+  body { font-family: 'Inter', sans-serif; color: #1C1730; }
+  .font-display { font-family: 'Space Grotesk', sans-serif; }
+  [x-cloak] { display: none !important; }
   @media (prefers-reduced-motion: reduce) {
-    * { animation-duration: 0.01ms !important; transition-duration: 0.01ms !important; }
+    * { animation: none !important; transition: none !important; }
   }
-  .ecg-path {
-    stroke-dasharray: 260;
-    stroke-dashoffset: 260;
-    animation: draw-pulse 1.6s ease-in-out forwards;
+
+  @keyframes feedIn {
+    from { opacity: 0; transform: translateY(10px); }
+    to   { opacity: 1; transform: translateY(0); }
   }
-  @keyframes draw-pulse { to { stroke-dashoffset: 0; } }
+  .feed-item { animation: feedIn 0.45s ease-out; }
+
+  @keyframes pulseDot {
+    0%, 100% { opacity: 1; }
+    50% { opacity: 0.35; }
+  }
+  .pulse-dot { animation: pulseDot 1.6s ease-in-out infinite; }
+
+  @keyframes float {
+    0%, 100% { transform: translateY(0); }
+    50% { transform: translateY(-8px); }
+  }
+  .float-slow { animation: float 5s ease-in-out infinite; }
+
+  /* ---------- Scroll reveal ---------- */
+  [data-reveal] { opacity: 0; transform: translateY(22px); transition: opacity 0.7s cubic-bezier(.2,.7,.2,1), transform 0.7s cubic-bezier(.2,.7,.2,1); }
+  [data-reveal].is-visible { opacity: 1; transform: translateY(0); }
+
+  /* ---------- Hover micro-interaction ---------- */
+  .hover-lift { transition: transform 0.25s cubic-bezier(.2,.7,.2,1), box-shadow 0.25s ease; }
+  .hover-lift:hover { transform: translateY(-4px); box-shadow: 0 20px 50px -20px rgba(90,63,170,0.35); }
+
+  /* ---------- Count-up ---------- */
+  [data-countup] { font-variant-numeric: tabular-nums; }
+
+  /* ---------- Marquee ---------- */
+  @keyframes marquee { from { transform: translateX(0); } to { transform: translateX(-50%); } }
+  .marquee-track { animation: marquee 26s linear infinite; }
+  .marquee-track:hover { animation-play-state: paused; }
+
+  /* ---------- Toast ---------- */
+  @keyframes toastIn { from { opacity: 0; transform: translateY(12px) scale(0.96); } to { opacity: 1; transform: translateY(0) scale(1); } }
+  .toast-enter { animation: toastIn 0.3s cubic-bezier(.2,.7,.2,1); }
 </style>
 </head>
-<body class="bg-bg text-ink" x-data="{ loading: true }" x-init="setTimeout(() => loading = false, 1400)" :class="{ 'overflow-hidden': loading }">
+<body class="text-ink antialiased" x-data="{ blobX: 0, blobY: 0 }" @mousemove.window="blobX = (($event.clientX / window.innerWidth) - 0.5) * 30; blobY = (($event.clientY / window.innerHeight) - 0.5) * 30">
+<div class="bg-blobs" aria-hidden="true" :style="`transform: translate(${blobX}px, ${blobY}px)`" style="transition: transform 0.4s cubic-bezier(.2,.7,.2,1);"></div>
 
-<!-- Preloader: one orchestrated moment — an ECG line draws in, then the
-     whole overlay fades and lifts. Nothing else on the page animates on load. -->
-<div
-    x-show="loading"
-    x-transition:leave="transition ease-in duration-500"
-    x-transition:leave-start="opacity-100"
-    x-transition:leave-end="opacity-0"
-    class="fixed inset-0 z-50 flex flex-col items-center justify-center gap-5 bg-primary"
->
-    <svg viewBox="0 0 220 70" class="w-56 h-16" aria-hidden="true">
-        <path class="ecg-path" d="M0 35 L55 35 L68 12 L82 58 L95 35 L110 35 L120 22 L130 35 L220 35"
-              fill="none" stroke="#E8A33D" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" />
-    </svg>
-    <span class="font-display text-white text-lg" x-show="true" x-transition:enter="transition ease-out duration-500 delay-700" x-transition:enter-start="opacity-0" x-transition:enter-end="opacity-100">Navvi</span>
+<div x-data="{ mobileNavOpen: false }">
+
+  <!-- ============ NAV ============ -->
+  <header class="sticky top-0 z-50 glass-header border-b border-white/60">
+    <div class="max-w-6xl mx-auto px-5 sm:px-8 h-16 flex items-center justify-between">
+      <a href="#top" class="font-display font-700 text-xl tracking-tight text-ink">
+        navvi<span class="text-plum-600">.</span>
+      </a>
+
+      <nav class="hidden md:flex items-center gap-8 text-sm font-medium text-plum-900/80">
+        <a href="#how-it-works" class="hover:text-plum-600 transition-colors">How it works</a>
+        <a href="#earnings" class="hover:text-plum-600 transition-colors">Earnings</a>
+        <a href="#safety" class="hover:text-plum-600 transition-colors">Safety</a>
+        <a href="#families" class="hover:text-plum-600 transition-colors">For families</a>
+        <a href="#faq" class="hover:text-plum-600 transition-colors">FAQ</a>
+      </nav>
+
+      <div class="hidden md:flex items-center gap-3">
+        <a href="{% url 'login' %}" class="text-sm font-medium text-plum-900/80 hover:text-plum-600 transition-colors">Log in</a>
+        <a href="{% url 'nurse_register' %}" class="text-sm font-semibold bg-ink text-white px-4 py-2.5 rounded-full hover:bg-plum-700 transition-colors">
+          Start earning
+        </a>
+      </div>
+
+      <!-- Hamburger -->
+      <button
+        @click="mobileNavOpen = !mobileNavOpen"
+        class="md:hidden relative w-9 h-9 flex items-center justify-center"
+        :aria-expanded="mobileNavOpen"
+        aria-label="Toggle menu"
+      >
+        <span class="sr-only">Menu</span>
+        <div class="w-6 flex flex-col gap-[5px]">
+          <span class="h-[2px] w-full bg-ink transition-transform duration-300 origin-center"
+                :class="mobileNavOpen ? 'rotate-45 translate-y-[7px]' : ''"></span>
+          <span class="h-[2px] w-full bg-ink transition-opacity duration-200"
+                :class="mobileNavOpen ? 'opacity-0' : 'opacity-100'"></span>
+          <span class="h-[2px] w-full bg-ink transition-transform duration-300 origin-center"
+                :class="mobileNavOpen ? '-rotate-45 -translate-y-[7px]' : ''"></span>
+        </div>
+      </button>
+    </div>
+
+    <!-- Mobile menu panel -->
+    <div
+      x-show="mobileNavOpen"
+      x-transition:enter="transition ease-out duration-200"
+      x-transition:enter-start="opacity-0 -translate-y-2"
+      x-transition:enter-end="opacity-100 translate-y-0"
+      x-transition:leave="transition ease-in duration-150"
+      x-transition:leave-start="opacity-100"
+      x-transition:leave-end="opacity-0"
+      @click.outside="mobileNavOpen = false"
+      class="md:hidden border-b border-white/60 glass-header px-5 pb-6 pt-2"
+      x-cloak
+    >
+      <nav class="grid grid-cols-2 gap-1 text-sm">
+        <a @click="mobileNavOpen=false" href="#how-it-works" class="py-3 border-b border-plum-50 text-plum-900/80">How it works</a>
+        <a @click="mobileNavOpen=false" href="#earnings" class="py-3 border-b border-plum-50 text-plum-900/80">Earnings</a>
+        <a @click="mobileNavOpen=false" href="#safety" class="py-3 border-b border-plum-50 text-plum-900/80">Safety</a>
+        <a @click="mobileNavOpen=false" href="#families" class="py-3 border-b border-plum-50 text-plum-900/80">For families</a>
+        <a @click="mobileNavOpen=false" href="#faq" class="py-3 col-span-2 border-b border-plum-50 text-plum-900/80">FAQ</a>
+        <a @click="mobileNavOpen=false" href="{% url 'login' %}" class="py-3 col-span-2 text-plum-900/80">Log in</a>
+      </nav>
+      <div class="mt-3 grid grid-cols-1 gap-2">
+        <a href="{% url 'nurse_register' %}" class="block text-center font-semibold bg-ink text-white px-4 py-3 rounded-full">
+          Register as a nurse
+        </a>
+        <a href="{% url 'patient_register' %}" class="block text-center font-semibold border border-plum-300 text-plum-900 px-4 py-3 rounded-full">
+          Book care for someone
+        </a>
+      </div>
+    </div>
+  </header>
+
+  <!-- ============ HERO ============ -->
+  <section id="top" class="relative overflow-hidden bg-plum-50">
+    <div class="max-w-6xl mx-auto px-5 sm:px-8 pt-14 pb-16 md:pt-24 md:pb-28 grid md:grid-cols-2 gap-12 items-center">
+      <div>
+        <p class="text-sm font-semibold text-plum-600 mb-4">For licensed nurses in Nigeria</p>
+        <h1 class="font-display text-[2.6rem] leading-[1.05] sm:text-6xl font-700 text-ink">
+          Your license.<br>
+          Your schedule.<br>
+          <span class="text-plum-600">Paid weekly.</span>
+        </h1>
+        <p class="mt-6 text-lg text-plum-900/70 max-w-md">
+          Navvi matches verified nurses with home care jobs nearby — antenatal visits, wound care, vitals checks. Accept what fits your week, get paid straight to your wallet.
+        </p>
+        <div class="mt-8 grid grid-cols-1 sm:grid-cols-2 gap-3 max-w-md">
+          <a href="{% url 'nurse_register' %}" class="text-center font-semibold bg-ink text-white px-6 py-3.5 rounded-full hover:bg-plum-700 transition-colors">
+            Register as a nurse
+          </a>
+          <a href="#how-it-works" class="text-center font-semibold border border-plum-300 text-plum-900 px-6 py-3.5 rounded-full hover:border-plum-600 hover:text-plum-600 transition-colors">
+            See how it works
+          </a>
+        </div>
+        <p class="mt-5 text-sm text-plum-900/50">NMCN license required · Verification usually takes under 48 hours</p>
+      </div>
+
+      <!-- Live job feed widget: the one bold interactive moment -->
+      <div x-data="jobFeed()" x-init="start()" class="relative">
+        <div class="float-slow glass-card rounded-3xl shadow-[0_20px_60px_-20px_rgba(90,63,170,0.35)] p-5 max-w-sm mx-auto">
+          <div class="flex items-center justify-between mb-4">
+            <span class="text-xs font-semibold text-plum-900/50 tracking-wide">Jobs near Lagos</span>
+            <span class="flex items-center gap-1.5 text-xs font-semibold text-plum-600">
+              <span class="w-1.5 h-1.5 rounded-full bg-plum-600 pulse-dot"></span> Live
+            </span>
+          </div>
+
+          <div class="space-y-2.5 h-64 overflow-hidden relative">
+            <template x-for="job in visible" :key="job.key">
+              <div class="feed-item flex items-center gap-3 bg-plum-50 rounded-2xl px-3.5 py-3">
+                <div class="w-9 h-9 shrink-0 rounded-full bg-plum-600 text-white flex items-center justify-center font-display text-sm font-600" x-text="job.initials"></div>
+                <div class="min-w-0 flex-1">
+                  <p class="text-sm font-semibold truncate" x-text="job.care"></p>
+                  <p class="text-xs text-plum-900/50" x-text="job.area"></p>
+                </div>
+                <div class="text-right shrink-0">
+                  <p class="text-sm font-semibold text-plum-700" x-text="job.pay"></p>
+                  <p class="text-[11px] text-plum-900/40" x-text="job.status"></p>
+                </div>
+              </div>
+            </template>
+          </div>
+        </div>
+
+        <div class="hidden sm:block absolute -bottom-6 -left-6 glass-card rounded-2xl shadow-lg px-4 py-3">
+          <p class="text-2xl font-display font-700 text-ink">4.9<span class="text-plum-400 text-base">/5</span></p>
+          <p class="text-xs text-plum-900/50">avg. nurse rating</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ============ LIVE ACTIVITY MARQUEE ============ -->
+  <div class="border-b border-white/60 glass-panel overflow-hidden py-2.5">
+    <div class="flex marquee-track whitespace-nowrap">
+      <div class="flex items-center gap-10 pr-10">
+        <span class="text-xs font-medium text-plum-900/60">🟣 Antenatal visit claimed in Lekki Phase 1</span>
+        <span class="text-xs font-medium text-plum-900/60">🟣 ₦3,800 released to a nurse in Ikeja</span>
+        <span class="text-xs font-medium text-plum-900/60">🟣 New nurse verified in Surulere</span>
+        <span class="text-xs font-medium text-plum-900/60">🟣 Wound dressing visit completed in Yaba</span>
+        <span class="text-xs font-medium text-plum-900/60">🟣 Long-term case matched in Victoria Island</span>
+        <span class="text-xs font-medium text-plum-900/60">🟣 ₦4,500 released to a nurse in Ajah</span>
+      </div>
+      <div class="flex items-center gap-10 pr-10" aria-hidden="true">
+        <span class="text-xs font-medium text-plum-900/60">🟣 Antenatal visit claimed in Lekki Phase 1</span>
+        <span class="text-xs font-medium text-plum-900/60">🟣 ₦3,800 released to a nurse in Ikeja</span>
+        <span class="text-xs font-medium text-plum-900/60">🟣 New nurse verified in Surulere</span>
+        <span class="text-xs font-medium text-plum-900/60">🟣 Wound dressing visit completed in Yaba</span>
+        <span class="text-xs font-medium text-plum-900/60">🟣 Long-term case matched in Victoria Island</span>
+        <span class="text-xs font-medium text-plum-900/60">🟣 ₦4,500 released to a nurse in Ajah</span>
+      </div>
+    </div>
+  </div>
+
+  <!-- ============ STAT GRID ============ -->
+  <section class="border-y border-plum-100" data-reveal>
+    <div class="max-w-6xl mx-auto grid grid-cols-3 divide-x divide-plum-100">
+      <div class="px-4 sm:px-8 py-8 sm:py-10 text-center">
+        <p class="font-display text-2xl sm:text-3xl font-700 text-ink"><span data-countup data-target="2400" data-suffix="+">0</span></p>
+        <p class="text-xs sm:text-sm text-plum-900/50 mt-1">Verified nurses</p>
+      </div>
+      <div class="px-4 sm:px-8 py-8 sm:py-10 text-center">
+        <p class="font-display text-2xl sm:text-3xl font-700 text-ink">₦<span data-countup data-target="18" data-suffix="k">0</span></p>
+        <p class="text-xs sm:text-sm text-plum-900/50 mt-1">Median weekly payout</p>
+      </div>
+      <div class="px-4 sm:px-8 py-8 sm:py-10 text-center">
+        <p class="font-display text-2xl sm:text-3xl font-700 text-ink">&lt;<span data-countup data-target="48" data-suffix="hrs">0</span></p>
+        <p class="text-xs sm:text-sm text-plum-900/50 mt-1">To get verified</p>
+      </div>
+    </div>
+  </section>
+
+  <!-- ============ HOW IT WORKS (grid) ============ -->
+  <section id="how-it-works" class="py-20 md:py-28" data-reveal>
+    <div class="max-w-6xl mx-auto px-5 sm:px-8">
+      <div class="max-w-lg">
+        <h2 class="font-display text-3xl sm:text-4xl font-700 text-ink">From sign-up to your first shift</h2>
+        <p class="mt-3 text-plum-900/60">Four steps. No agency, no middleman chasing your pay.</p>
+      </div>
+
+      <div class="mt-12 grid grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-5">
+        <div class="glass-card hover-lift rounded-3xl p-5 sm:p-6">
+          <span class="font-display text-3xl font-700 text-plum-300">1</span>
+          <h3 class="mt-4 font-semibold text-lg">Register</h3>
+          <p class="mt-2 text-sm text-plum-900/60">Add your NMCN number and government ID. Takes about five minutes.</p>
+        </div>
+        <div class="glass-card hover-lift rounded-3xl p-5 sm:p-6">
+          <span class="font-display text-3xl font-700 text-plum-300">2</span>
+          <h3 class="mt-4 font-semibold text-lg">Get verified</h3>
+          <p class="mt-2 text-sm text-plum-900/60">Our team checks your license and ID before you touch a single job.</p>
+        </div>
+        <div class="glass-card hover-lift rounded-3xl p-5 sm:p-6">
+          <span class="font-display text-3xl font-700 text-plum-300">3</span>
+          <h3 class="mt-4 font-semibold text-lg">Claim a job</h3>
+          <p class="mt-2 text-sm text-plum-900/60">Browse requests near you by skill and distance. First to accept gets it.</p>
+        </div>
+        <div class="glass-card hover-lift rounded-3xl p-5 sm:p-6">
+          <span class="font-display text-3xl font-700 text-plum-300">4</span>
+          <h3 class="mt-4 font-semibold text-lg">Get paid</h3>
+          <p class="mt-2 text-sm text-plum-900/60">Funds sit in escrow until the visit's confirmed, then land in your wallet.</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ============ EARNINGS CALCULATOR (grid) ============ -->
+  <section id="earnings" class="bg-ink text-white py-20 md:py-28" data-reveal>
+    <div class="max-w-6xl mx-auto px-5 sm:px-8 grid md:grid-cols-2 gap-12 items-center">
+      <div>
+        <h2 class="font-display text-3xl sm:text-4xl font-700">See what a real week looks like</h2>
+        <p class="mt-3 text-white/60 max-w-md">Slide to your hours and pick a care type. This is an estimate before Navvi's commission is taken out — you keep the rest.</p>
+
+        <div x-data="calculator()" class="mt-10 bg-white/5 border border-white/10 rounded-3xl p-6">
+          <div>
+            <div class="flex justify-between text-sm mb-2">
+              <span class="text-white/60">Hours per week</span>
+              <span class="font-semibold" x-text="hours + ' hrs'"></span>
+            </div>
+            <input type="range" min="5" max="45" step="5" x-model="hours"
+                   class="w-full accent-plum-400">
+            <div class="mt-3 h-2 rounded-full bg-white/10 overflow-hidden">
+              <div class="h-full bg-gradient-to-r from-plum-400 to-plum-200 rounded-full transition-all duration-500 ease-out" :style="`width: ${(hours / 45) * 100}%`"></div>
+            </div>
+          </div>
+
+          <div class="mt-6">
+            <span class="text-sm text-white/60 block mb-2">Care type</span>
+            <div class="grid grid-cols-2 gap-2">
+              <template x-for="c in careTypes" :key="c.name">
+                <button
+                  @click="selected = c.name"
+                  :class="selected === c.name ? 'bg-plum-500 text-white border-plum-500' : 'bg-transparent text-white/70 border-white/20'"
+                  class="text-xs font-medium px-3 py-2.5 rounded-full border transition-colors"
+                  x-text="c.name"
+                ></button>
+              </template>
+            </div>
+          </div>
+
+          <div class="mt-8 pt-6 border-t border-white/10 flex items-end justify-between">
+            <span class="text-white/60 text-sm">Estimated weekly earnings</span>
+            <span class="font-display text-3xl font-700 text-plum-300" x-text="formattedEarnings"></span>
+          </div>
+        </div>
+      </div>
+
+      <div class="grid grid-cols-2 gap-4">
+        <div class="bg-white/5 border border-white/10 rounded-2xl p-5 sm:p-6 sm:mt-8">
+          <p class="text-sm text-white/50">Antenatal care</p>
+          <p class="font-display text-xl font-700 mt-2">₦4,500<span class="text-white/40 text-sm font-body">/visit</span></p>
+        </div>
+        <div class="bg-white/5 border border-white/10 rounded-2xl p-5 sm:p-6">
+          <p class="text-sm text-white/50">Wound dressing</p>
+          <p class="font-display text-xl font-700 mt-2">₦3,800<span class="text-white/40 text-sm font-body">/visit</span></p>
+        </div>
+        <div class="bg-white/5 border border-white/10 rounded-2xl p-5 sm:p-6">
+          <p class="text-sm text-white/50">Vitals check</p>
+          <p class="font-display text-xl font-700 mt-2">₦2,500<span class="text-white/40 text-sm font-body">/visit</span></p>
+        </div>
+        <div class="bg-white/5 border border-white/10 rounded-2xl p-5 sm:p-6 sm:mt-8">
+          <p class="text-sm text-white/50">Long-term care</p>
+          <p class="font-display text-xl font-700 mt-2">₦85k<span class="text-white/40 text-sm font-body">/mo</span></p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ============ SAFETY (bento grid) ============ -->
+  <section id="safety" class="py-20 md:py-28" data-reveal>
+    <div class="max-w-6xl mx-auto px-5 sm:px-8">
+      <div class="max-w-lg">
+        <h2 class="font-display text-3xl sm:text-4xl font-700 text-ink">Built so you always get paid</h2>
+        <p class="mt-3 text-plum-900/60">No chasing families for cash. No unverified strangers on the other end.</p>
+      </div>
+
+      <div class="mt-12 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 lg:grid-rows-2 gap-5">
+        <div class="lg:col-span-2 lg:row-span-2 rounded-3xl bg-plum-900 text-white p-7 flex flex-col justify-between">
+          <div>
+            <h3 class="font-display text-2xl font-700">Escrow-held payments</h3>
+            <p class="mt-3 text-white/60 max-w-sm">Families pay upfront through Paystack. The money is held until the visit is confirmed complete, then released straight to your wallet — no chasing anyone for cash.</p>
+          </div>
+          <div class="mt-8 grid grid-cols-2 gap-3 max-w-xs">
+            <div class="bg-white/10 rounded-2xl p-4">
+              <p class="text-xs text-white/50">Held</p>
+              <p class="font-display text-lg font-700 mt-1">₦<span data-countup data-target="45000">0</span></p>
+            </div>
+            <div class="bg-white/10 rounded-2xl p-4">
+              <p class="text-xs text-white/50">Released</p>
+              <p class="font-display text-lg font-700 mt-1 text-plum-300">₦<span data-countup data-target="38250">0</span></p>
+            </div>
+          </div>
+        </div>
+
+        <div class="lg:col-span-2 rounded-3xl glass-panel p-6">
+          <h3 class="font-semibold text-lg">Every nurse is checked</h3>
+          <p class="mt-2 text-sm text-plum-900/60">NMCN registration and government ID are verified before anyone can accept a job — for your safety and the patient's.</p>
+        </div>
+
+        <div class="rounded-3xl glass-panel p-6">
+          <h3 class="font-semibold text-lg">High-risk vitals flag instantly</h3>
+          <p class="mt-2 text-sm text-plum-900/60">A crossed threshold alerts a partner hospital automatically.</p>
+        </div>
+
+        <div class="rounded-3xl glass-panel p-6">
+          <h3 class="font-semibold text-lg">Disputes get resolved</h3>
+          <p class="mt-2 text-sm text-plum-900/60">A real person on our team reviews it, not a bot loop.</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ============ TESTIMONIALS (grid) ============ -->
+  <section class="py-20 md:py-28 bg-plum-50" data-reveal>
+    <div class="max-w-6xl mx-auto px-5 sm:px-8">
+      <h2 class="font-display text-3xl sm:text-4xl font-700 text-ink max-w-lg">What nurses actually say</h2>
+
+      <div class="mt-12 grid grid-cols-1 md:grid-cols-3 gap-5">
+        <div class="glass-card hover-lift rounded-3xl p-6">
+          <p class="text-plum-900/80">"I pick up two or three visits around my hospital shifts. The escrow thing means I stopped worrying about getting stood up on payment."</p>
+          <p class="mt-4 text-sm font-semibold">Adaeze O. — RN, Lagos</p>
+        </div>
+        <div class="glass-card hover-lift rounded-3xl p-6">
+          <p class="text-plum-900/80">"Verification was faster than I expected. I was live and claiming jobs the same week I registered."</p>
+          <p class="mt-4 text-sm font-semibold">Tunde A. — Community Health Nurse</p>
+        </div>
+        <div class="glass-card hover-lift rounded-3xl p-6">
+          <p class="text-plum-900/80">"The long-term milestone payouts are what sold me — steady income for a two-month case instead of one lump sum at the end."</p>
+          <p class="mt-4 text-sm font-semibold">Blessing I. — RM/RN</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ============ FOR FAMILIES (grid) ============ -->
+  <section id="families" class="py-20 md:py-28" data-reveal>
+    <div class="max-w-6xl mx-auto px-5 sm:px-8 grid md:grid-cols-2 gap-12 items-center">
+      <div>
+        <p class="text-sm font-semibold text-plum-600 mb-3">For patients and families</p>
+        <h2 class="font-display text-3xl sm:text-4xl font-700 text-ink">Booking a nurse shouldn't feel like a gamble</h2>
+        <p class="mt-4 text-plum-900/60 max-w-md">
+          Whether you're booking care for yourself or for a relative back home from abroad, every nurse on Navvi is license-verified before they can accept your request.
+        </p>
+        <a href="{% url 'patient_register' %}" class="mt-7 inline-block font-semibold border border-plum-300 text-plum-900 px-6 py-3.5 rounded-full hover:border-plum-600 hover:text-plum-600 transition-colors">
+          Book care for someone
+        </a>
+      </div>
+      <div class="glass-card hover-lift rounded-3xl p-6 shadow-[0_20px_60px_-25px_rgba(90,63,170,0.35)]">
+        <div class="flex items-center gap-3 pb-4 border-b border-plum-50">
+          <div class="w-10 h-10 rounded-full bg-plum-600 text-white flex items-center justify-center font-display font-600">CB</div>
+          <div>
+            <p class="font-semibold text-sm">Chidinma B.</p>
+            <p class="text-xs text-plum-900/50">Antenatal care · Verified</p>
+          </div>
+          <span class="ml-auto text-xs font-semibold text-plum-600 bg-plum-50 px-2.5 py-1 rounded-full">On the way</span>
+        </div>
+        <div class="pt-4 grid grid-cols-1 gap-3 text-sm">
+          <div class="flex justify-between"><span class="text-plum-900/50">Visit</span><span class="font-medium">Today, 2:00 PM</span></div>
+          <div class="flex justify-between"><span class="text-plum-900/50">Location</span><span class="font-medium">Lekki Phase 1</span></div>
+          <div class="flex justify-between"><span class="text-plum-900/50">Status</span><span class="font-medium text-plum-600">Payment held in escrow</span></div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ============ FAQ ============ -->
+  <section id="faq" class="py-20 md:py-28 bg-plum-50" data-reveal>
+    <div class="max-w-3xl mx-auto px-5 sm:px-8">
+      <h2 class="font-display text-3xl sm:text-4xl font-700 text-ink">Questions nurses actually ask</h2>
+
+      <div class="mt-10 divide-y divide-plum-200" x-data="{ open: 0 }">
+        <template x-for="(item, i) in [
+          { q: 'Do I need an active NMCN license to join?', a: 'Yes. Your NMCN registration number and a valid government ID are required before you can register, and both are checked by our verification team.' },
+          { q: 'How fast do I get paid after a visit?', a: 'For short-term care, funds release as soon as the family confirms the visit is complete. For long-term cases, you are paid in four milestone releases roughly every two weeks.' },
+          { q: 'Can I say no to a job?', a: 'Always. Declining a job never affects your ability to claim other ones — it just goes back into the pool for other nurses nearby.' },
+          { q: 'What happens if a patient vitals look dangerous?', a: 'The reading is checked against clinical thresholds the moment you submit it. If it crosses the line, a partner hospital is alerted automatically so you are not making that call solo.' },
+          { q: 'Is there a fee taken out of what I earn?', a: 'Navvi takes a commission between 10 and 20 percent depending on the case, held transparently in escrow — you can see exactly what is released and what is commission.' },
+        ]" :key="i">
+          <div class="py-5">
+            <button @click="open = open === i ? null : i" class="w-full flex items-center justify-between text-left gap-4">
+              <span class="font-semibold" x-text="item.q"></span>
+              <span class="shrink-0 text-plum-500 text-xl font-display transition-transform duration-300" :class="open === i ? 'rotate-45' : ''">+</span>
+            </button>
+            <div x-show="open === i" x-collapse class="pt-3 text-sm text-plum-900/60 pr-8" x-text="item.a"></div>
+          </div>
+        </template>
+      </div>
+    </div>
+  </section>
+
+  <!-- ============ FINAL CTA ============ -->
+  <section id="join" class="py-20 md:py-28" data-reveal>
+    <div class="max-w-4xl mx-auto px-5 sm:px-8 text-center">
+      <h2 class="font-display text-3xl sm:text-5xl font-700 text-ink leading-tight">
+        Your next shift is a claim away
+      </h2>
+      <p class="mt-4 text-plum-900/60 max-w-md mx-auto">Register today and most nurses are verified and claiming jobs within 48 hours.</p>
+      <div class="mt-8 grid grid-cols-1 sm:grid-cols-2 gap-3 max-w-md mx-auto">
+        <a href="{% url 'nurse_register' %}" class="text-center font-semibold bg-ink text-white px-8 py-4 rounded-full hover:bg-plum-700 transition-colors">
+          Register as a nurse
+        </a>
+        <a href="{% url 'patient_register' %}" class="text-center font-semibold border border-plum-300 text-plum-900 px-8 py-4 rounded-full hover:border-plum-600 hover:text-plum-600 transition-colors">
+          Book care instead
+        </a>
+      </div>
+    </div>
+  </section>
+
+  <!-- ============ FOOTER (grid) ============ -->
+  <footer class="border-t border-plum-100 py-12">
+    <div class="max-w-6xl mx-auto px-5 sm:px-8 grid grid-cols-2 md:grid-cols-4 gap-8">
+      <div class="col-span-2 md:col-span-1">
+        <p class="font-display font-700 text-lg">navvi<span class="text-plum-600">.</span></p>
+        <p class="text-sm text-plum-900/50 mt-2 max-w-xs">Verified home nursing care, matched fast. Lagos and expanding.</p>
+      </div>
+      <div>
+        <p class="text-xs font-semibold text-plum-900/40 mb-3">Nurses</p>
+        <div class="grid gap-2 text-sm text-plum-900/60">
+          <a href="{% url 'nurse_register' %}" class="hover:text-plum-600">Register to work</a>
+          <a href="#how-it-works" class="hover:text-plum-600">How it works</a>
+          <a href="#earnings" class="hover:text-plum-600">Earnings</a>
+        </div>
+      </div>
+      <div>
+        <p class="text-xs font-semibold text-plum-900/40 mb-3">Families</p>
+        <div class="grid gap-2 text-sm text-plum-900/60">
+          <a href="{% url 'patient_register' %}" class="hover:text-plum-600">Book care</a>
+          <a href="#families" class="hover:text-plum-600">For families</a>
+          <a href="#safety" class="hover:text-plum-600">Safety</a>
+        </div>
+      </div>
+      <div>
+        <p class="text-xs font-semibold text-plum-900/40 mb-3">Account</p>
+        <div class="grid gap-2 text-sm text-plum-900/60">
+          <a href="{% url 'login' %}" class="hover:text-plum-600">Log in</a>
+          <a href="#faq" class="hover:text-plum-600">FAQ</a>
+        </div>
+      </div>
+    </div>
+    <p class="max-w-6xl mx-auto px-5 sm:px-8 mt-10 text-xs text-plum-900/40">© 2026 Navvi. All rights reserved.</p>
+  </footer>
+
 </div>
 
-<nav class="py-6">
-    <div class="max-w-6xl mx-auto px-6 flex items-center justify-between">
-        <a href="#" class="font-display text-2xl font-semibold text-ink">Navvi</a>
-        <div class="flex items-center gap-5">
-            <a href="/login/" class="text-sm font-medium text-ink">Log in</a>
-            <a href="/nurses/register/" class="text-sm font-medium border border-border rounded-lg px-4 py-2">Join as a nurse</a>
-        </div>
-    </div>
-</nav>
+<script>
+  // ---------- Scroll reveal ----------
+  function initReveal() {
+    const els = document.querySelectorAll('[data-reveal]');
+    const io = new IntersectionObserver((entries) => {
+      entries.forEach(entry => {
+        if (entry.isIntersecting) { entry.target.classList.add('is-visible'); io.unobserve(entry.target); }
+      });
+    }, { threshold: 0.15 });
+    els.forEach(el => io.observe(el));
+  }
 
-<section class="py-12 md:py-20">
-    <div class="max-w-6xl mx-auto px-6 grid md:grid-cols-2 gap-12 items-center">
-        <div>
-            <h1 class="text-4xl md:text-5xl font-semibold leading-tight max-w-xs md:max-w-sm mb-5">Verified nursing care, sent to your door.</h1>
-            <p class="text-lg text-muted max-w-md mb-6">Book a licensed nurse or midwife for antenatal care, wound dressing, or vitals monitoring — at home, in Nigeria, today.</p>
-            <div class="flex flex-wrap gap-3">
-                <a href="/bookings/create/" class="bg-primary text-white font-medium px-6 py-3 rounded-lg hover:bg-primaryDark transition">Book care now</a>
-                <a href="#how" class="border border-border font-medium px-6 py-3 rounded-lg">See how it works</a>
-            </div>
-        </div>
-        <div class="bg-white border border-border rounded-2xl p-8">
-            <svg viewBox="0 0 320 180" role="img" aria-label="Route from a verified nurse to the patient's home" class="w-full h-auto">
-                <circle cx="40" cy="140" r="7" fill="#1B4B43"/>
-                <text x="40" y="164" text-anchor="middle" font-family="Work Sans" font-size="11" fill="#5B6B63">Nurse</text>
-                <path d="M40 140 Q 120 60 180 90 T 270 50" stroke="#E8A33D" stroke-width="2.5" fill="none" stroke-dasharray="6 6"/>
-                <circle cx="270" cy="50" r="9" fill="#1B4B43"/>
-                <path d="M263 50 L270 43 L277 50 M266 50 V57 H274 V50" stroke="#fff" stroke-width="1.6" fill="none" stroke-linecap="round" stroke-linejoin="round"/>
-                <text x="270" y="74" text-anchor="middle" font-family="Work Sans" font-size="11" fill="#5B6B63">Your home</text>
-            </svg>
-            <div class="text-sm text-muted text-center mt-3">Matched by proximity, skill, and reliability — every visit tracked.</div>
-        </div>
-    </div>
-</section>
+  // ---------- Count-up numbers ----------
+  function initCountUps() {
+    const els = document.querySelectorAll('[data-countup]');
+    const animate = (el) => {
+      const target = parseFloat(el.dataset.target || '0');
+      const suffix = el.dataset.suffix || '';
+      const duration = 1400;
+      const start = performance.now();
+      function step(now) {
+        const progress = Math.min((now - start) / duration, 1);
+        const eased = 1 - Math.pow(1 - progress, 3);
+        el.textContent = Math.round(target * eased).toLocaleString('en-NG') + suffix;
+        if (progress < 1) requestAnimationFrame(step);
+      }
+      requestAnimationFrame(step);
+    };
+    const io = new IntersectionObserver((entries) => {
+      entries.forEach(entry => {
+        if (entry.isIntersecting) { animate(entry.target); io.unobserve(entry.target); }
+      });
+    }, { threshold: 0.4 });
+    els.forEach(el => io.observe(el));
+  }
 
-<section class="bg-primary text-white py-10">
-    <div class="max-w-6xl mx-auto px-6 grid md:grid-cols-3 gap-8 text-center">
-        <div>
-            <div class="font-display text-3xl text-accent">100%</div>
-            <div class="text-sm text-white/85">Nurses verified against NMCN records</div>
-        </div>
-        <div>
-            <div class="font-display text-3xl text-accent">Escrow</div>
-            <div class="text-sm text-white/85">Payment held until care is confirmed complete</div>
-        </div>
-        <div>
-            <div class="font-display text-3xl text-accent">24/7</div>
-            <div class="text-sm text-white/85">Emergency referral to partner hospitals</div>
-        </div>
-    </div>
-</section>
+  document.addEventListener('DOMContentLoaded', () => { initReveal(); initCountUps(); });
 
-<section class="py-16 md:py-20" id="how">
-    <div class="max-w-6xl mx-auto px-6">
-        <h2 class="text-3xl font-semibold max-w-xs mb-10">From request to care, in four steps.</h2>
-        <div class="grid sm:grid-cols-2 md:grid-cols-4 gap-6">
-            <div class="border-t-2 border-accent pt-4">
-                <span class="font-display text-2xl text-primary block mb-1">1</span>
-                <h3 class="font-medium mb-1">Book</h3>
-                <p class="text-sm text-muted">Tell us the care needed, when, and where — for yourself or a relative.</p>
-            </div>
-            <div class="border-t-2 border-accent pt-4">
-                <span class="font-display text-2xl text-primary block mb-1">2</span>
-                <h3 class="font-medium mb-1">Matched</h3>
-                <p class="text-sm text-muted">A verified nurse nearby, with the right skills, is dispatched to accept.</p>
-            </div>
-            <div class="border-t-2 border-accent pt-4">
-                <span class="font-display text-2xl text-primary block mb-1">3</span>
-                <h3 class="font-medium mb-1">Care visit</h3>
-                <p class="text-sm text-muted">Vitals are logged and checked against safety thresholds in real time.</p>
-            </div>
-            <div class="border-t-2 border-accent pt-4">
-                <span class="font-display text-2xl text-primary block mb-1">4</span>
-                <h3 class="font-medium mb-1">Confirmed</h3>
-                <p class="text-sm text-muted">You confirm completion, and payment releases from escrow to the nurse.</p>
-            </div>
-        </div>
-    </div>
-</section>
+  function jobFeed() {
+    return {
+      pool: [
+        { initials: 'AO', care: 'Antenatal visit accepted', area: 'Lekki Phase 1', pay: '₦4,500', status: 'Just now' },
+        { initials: 'TB', care: 'Wound dressing requested', area: 'Ikeja GRA', pay: '₦3,800', status: '2 min ago' },
+        { initials: 'CI', care: 'Vitals check accepted', area: 'Yaba', pay: '₦2,500', status: '4 min ago' },
+        { initials: 'FK', care: 'Long-term care matched', area: 'Victoria Island', pay: '₦85,000/mo', status: '6 min ago' },
+        { initials: 'RM', care: 'Antenatal visit accepted', area: 'Surulere', pay: '₦4,500', status: '9 min ago' },
+        { initials: 'DE', care: 'Wound dressing requested', area: 'Ajah', pay: '₦3,800', status: '11 min ago' },
+      ],
+      visible: [],
+      counter: 0,
+      start() {
+        this.visible = this.pool.slice(0, 3).map((j, idx) => ({ ...j, key: idx }));
+        this.counter = 3;
+        setInterval(() => {
+          const next = { ...this.pool[this.counter % this.pool.length], key: this.counter };
+          this.visible = [next, ...this.visible].slice(0, 3);
+          this.counter++;
+        }, 2600);
+      }
+    }
+  }
 
-<section class="py-12 md:py-16">
-    <div class="max-w-6xl mx-auto px-6">
-        <div class="grid md:grid-cols-2 gap-8 items-center py-8 border-t border-border">
-            <div>
-                <span class="text-sm font-semibold text-accent">Antenatal care</span>
-                <h3 class="text-xl font-display font-semibold mt-1 mb-1">Pregnancy check-ins at home</h3>
-                <p class="text-muted">Routine antenatal visits for expectant mothers, without the trip to a clinic.</p>
-            </div>
-            <p class="text-muted">Blood pressure, weight, and fetal heart rate monitored by a qualified midwife, logged to your record each visit.</p>
-        </div>
-        <div class="grid md:grid-cols-2 gap-8 items-center py-8 border-t border-border bg-white rounded-xl px-6">
-            <div>
-                <span class="text-sm font-semibold text-accent">Wound dressing</span>
-                <h3 class="text-xl font-display font-semibold mt-1 mb-1">Post-surgical and injury care</h3>
-                <p class="text-muted">Regular dressing changes and wound checks from a licensed nurse.</p>
-            </div>
-            <p class="text-muted">Reduces infection risk from missed clinic follow-ups, especially for patients with limited mobility.</p>
-        </div>
-        <div class="grid md:grid-cols-2 gap-8 items-center py-8 border-t border-b border-border">
-            <div>
-                <span class="text-sm font-semibold text-accent">Vitals check</span>
-                <h3 class="text-xl font-display font-semibold mt-1 mb-1">Blood pressure, oxygen, temperature</h3>
-                <p class="text-muted">A general vitals check for ongoing conditions or peace of mind.</p>
-            </div>
-            <p class="text-muted">Results outside safe thresholds trigger an automatic high-risk alert and referral — never missed, never delayed.</p>
-        </div>
-    </div>
-</section>
-
-<section class="bg-primaryDark text-white py-16">
-    <div class="max-w-6xl mx-auto px-6 grid md:grid-cols-2 gap-10 items-center">
-        <div>
-            <h2 class="text-3xl font-semibold max-w-xs mb-4 text-white">Caring for family, from anywhere.</h2>
-            <p class="text-white/80 mb-5">Book and pay for a parent's or relative's care in Nigeria from wherever you are — with visit confirmations and status updates the whole way.</p>
-            <a href="/bookings/create/" class="inline-block bg-accent text-primaryDark font-medium px-6 py-3 rounded-lg">Book care for a relative</a>
-        </div>
-        <blockquote class="font-display text-xl leading-relaxed border-l-2 border-accent pl-5">
-            "I booked antenatal visits for my sister in Port Harcourt from London. Every visit, I knew exactly what happened."
-            <cite class="block font-body not-italic text-sm text-white/65 mt-3">— A Navvi family member</cite>
-        </blockquote>
-    </div>
-</section>
-
-<section class="py-16 text-center">
-    <div class="max-w-6xl mx-auto px-6">
-        <h2 class="text-3xl font-semibold mb-3">Ready when you need care.</h2>
-        <p class="max-w-md mx-auto mb-6">Book in minutes. A verified nurse is on the way.</p>
-        <a href="/bookings/create/" class="inline-block bg-primary text-white font-medium px-6 py-3 rounded-lg hover:bg-primaryDark transition">Book care now</a>
-    </div>
-</section>
-
-<footer class="border-t border-border py-8">
-    <div class="max-w-6xl mx-auto px-6 flex justify-between text-sm text-muted">
-        <span>&copy; 2026 Navvi</span>
-        <span>Lagos &middot; Port Harcourt &middot; Abuja</span>
-    </div>
-</footer>
+  function calculator() {
+    return {
+      hours: 20,
+      selected: 'Antenatal care',
+      careTypes: [
+        { name: 'Antenatal care', perHour: 900 },
+        { name: 'Wound dressing', perHour: 950 },
+        { name: 'Vitals check', perHour: 700 },
+        { name: 'Long-term care', perHour: 1100 },
+      ],
+      get formattedEarnings() {
+        const rate = this.careTypes.find(c => c.name === this.selected).perHour;
+        const total = rate * this.hours;
+        return '₦' + total.toLocaleString('en-NG');
+      }
+    }
+  }
+</script>
 
 </body>
 </html>

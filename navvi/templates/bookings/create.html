@@ -1,57 +1,827 @@
 {% extends "base.html" %}
-{% block title %}Book Care — Navvi{% endblock %}
+
+{% block title %}Book a nurse — Navvi{% endblock %}
+
 {% block content %}
-<div class="max-w-md mx-auto" x-data="{ submitting: false }">
-    <h1 class="text-2xl font-semibold mb-5">Book care</h1>
-    <form method="post" @submit="submitting = true" class="bg-white border border-border rounded-xl p-6">
-        {% csrf_token %}
-        <div class="mb-4">
-            <label class="block text-sm font-medium mb-1">Care type</label>
-            <select name="care_type" class="w-full border border-border rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-primary">
-                <option value="antenatal_care">Antenatal care</option>
-                <option value="wound_dressing">Wound dressing</option>
-                <option value="vitals_check">General vitals check</option>
-                <option value="other">Other</option>
-            </select>
-            {% if errors.care_type %}<div class="text-alert text-sm mt-1">{{ errors.care_type }}</div>{% endif %}
+
+<div
+  class="relative min-h-[calc(100vh-5rem)] overflow-hidden"
+  x-data="bookingForm()"
+>
+  <!-- Ambient background -->
+  <div class="pointer-events-none absolute inset-0 overflow-hidden">
+    <div class="absolute -left-32 -top-32 h-96 w-96 rounded-full bg-plum-200/25 blur-3xl"></div>
+    <div class="absolute right-[-10rem] top-1/4 h-[32rem] w-[32rem] rounded-full bg-purple-200/20 blur-3xl"></div>
+    <div class="absolute bottom-[-12rem] left-1/3 h-96 w-96 rounded-full bg-fuchsia-100/20 blur-3xl"></div>
+  </div>
+
+  <div class="relative mx-auto max-w-6xl px-4 py-6 sm:px-6 sm:py-10 lg:px-8 lg:py-14">
+
+    <!-- Top bar -->
+    <div class="mb-8 flex items-center justify-between gap-4">
+      <div class="flex items-center gap-3">
+        <div class="flex h-10 w-10 items-center justify-center rounded-2xl bg-plum-600 text-white shadow-lg shadow-plum-600/20">
+          <i data-lucide="heart-pulse" class="h-5 w-5"></i>
         </div>
-        <div class="mb-4">
-            <label class="block text-sm font-medium mb-1">Duration</label>
-            <select name="duration_type" class="w-full border border-border rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-primary">
-                <option value="short_term">Short-term (1–3 days)</option>
-                <option value="long_term">Long-term (1–2 months)</option>
-            </select>
+
+        <div>
+          <p class="text-xs font-bold uppercase tracking-[0.18em] text-plum-900/35">
+            Navvi Care
+          </p>
+          <p class="mt-0.5 text-sm font-semibold text-plum-950">
+            New care request
+          </p>
         </div>
-        <div class="mb-4">
-            <label class="block text-sm font-medium mb-1">Symptoms / notes</label>
-            <textarea name="symptoms_notes" rows="3" class="w-full border border-border rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-primary"></textarea>
-        </div>
-        <div class="grid grid-cols-2 gap-4 mb-4">
-            <div>
-                <label class="block text-sm font-medium mb-1">Latitude</label>
-                <input type="text" name="latitude" placeholder="4.8156" class="w-full border border-border rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-primary">
-                {% if errors.latitude %}<div class="text-alert text-sm mt-1">{{ errors.latitude }}</div>{% endif %}
+      </div>
+
+      <div class="hidden items-center gap-2 rounded-full border border-plum-100 bg-white/75 px-3.5 py-2 text-xs font-semibold text-plum-900/50 shadow-sm backdrop-blur-xl sm:flex">
+        <span class="h-2 w-2 rounded-full bg-emerald-400"></span>
+        Verified nurses nearby
+      </div>
+    </div>
+
+    <div class="grid gap-6 lg:grid-cols-[0.72fr_1.28fr] lg:items-start">
+
+      <!-- Left information panel -->
+      <aside
+        class="relative overflow-hidden rounded-[2rem] bg-[#15121B] p-6 text-white shadow-2xl shadow-plum-950/15 sm:p-8 lg:sticky lg:top-8"
+        data-reveal
+      >
+        <!-- Decorative geometry -->
+        <div class="pointer-events-none absolute -right-24 -top-24 h-72 w-72 rounded-full border border-white/10"></div>
+        <div class="pointer-events-none absolute -right-12 -top-12 h-48 w-48 rounded-full border border-white/10"></div>
+        <div class="pointer-events-none absolute bottom-[-8rem] left-[-8rem] h-64 w-64 rounded-full bg-plum-600/20 blur-3xl"></div>
+
+        <div class="relative">
+
+          <div class="flex items-start justify-between">
+            <div class="flex h-14 w-14 items-center justify-center rounded-[1.25rem] bg-white/10 ring-1 ring-white/10">
+              <i data-lucide="stethoscope" class="h-6 w-6 text-plum-200"></i>
             </div>
-            <div>
-                <label class="block text-sm font-medium mb-1">Longitude</label>
-                <input type="text" name="longitude" placeholder="7.0498" class="w-full border border-border rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-primary">
-                {% if errors.longitude %}<div class="text-alert text-sm mt-1">{{ errors.longitude }}</div>{% endif %}
+
+            <div class="rounded-full border border-white/10 bg-white/5 px-3 py-1.5 text-[10px] font-bold uppercase tracking-[0.18em] text-white/40">
+              Step 01 / 02
             </div>
+          </div>
+
+          <p class="mt-9 text-xs font-bold uppercase tracking-[0.2em] text-plum-300">
+            New booking
+          </p>
+
+          <h1 class="mt-3 font-display text-3xl font-bold leading-[1.08] tracking-tight sm:text-4xl">
+            Care,<br>
+            brought closer.
+          </h1>
+
+          <p class="mt-4 max-w-sm text-sm leading-6 text-white/50">
+            Tell us what you need, when you need it, and where you'll be. Navvi uses your request to match you with an available verified nurse.
+          </p>
+
+          <!-- Process -->
+          <div class="mt-9">
+            <p class="mb-3 text-[10px] font-bold uppercase tracking-[0.18em] text-white/30">
+              How it works
+            </p>
+
+            <div class="space-y-2">
+              <div class="flex items-center gap-3 rounded-2xl border border-white/10 bg-white/5 p-3.5">
+                <div class="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl bg-plum-600 text-white">
+                  <i data-lucide="clipboard-list" class="h-4 w-4"></i>
+                </div>
+
+                <div>
+                  <p class="text-xs font-bold text-white/85">Describe your care</p>
+                  <p class="mt-0.5 text-[11px] text-white/30">A few simple details</p>
+                </div>
+
+                <div class="ml-auto h-5 w-5 rounded-full bg-white/10 text-center text-[10px] leading-5 text-plum-200">
+                  1
+                </div>
+              </div>
+
+              <div class="flex items-center gap-3 rounded-2xl border border-white/10 bg-white/5 p-3.5">
+                <div class="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl bg-white/10 text-white/60">
+                  <i data-lucide="credit-card" class="h-4 w-4"></i>
+                </div>
+
+                <div>
+                  <p class="text-xs font-bold text-white/70">Confirm payment</p>
+                  <p class="mt-0.5 text-[11px] text-white/30">Secure booking flow</p>
+                </div>
+
+                <div class="ml-auto h-5 w-5 rounded-full bg-white/10 text-center text-[10px] leading-5 text-white/30">
+                  2
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Trust -->
+          <div class="mt-8 border-t border-white/10 pt-6">
+            <div class="flex items-start gap-3">
+              <div class="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl bg-emerald-400/10 text-emerald-300">
+                <i data-lucide="shield-check" class="h-4 w-4"></i>
+              </div>
+
+              <div>
+                <p class="text-xs font-semibold text-white/75">
+                  Built around verified care
+                </p>
+                <p class="mt-1 text-[11px] leading-5 text-white/30">
+                  Your request is shared with eligible nurses so the right professional can respond.
+                </p>
+              </div>
+            </div>
+          </div>
+
         </div>
-        <div class="mb-4">
-            <label class="block text-sm font-medium mb-1">Landmark</label>
-            <input type="text" name="landmark" class="w-full border border-border rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-primary">
+      </aside>
+
+      <!-- Main form -->
+      <main
+        class="overflow-hidden rounded-[2rem] border border-plum-100 bg-white/85 shadow-xl shadow-plum-950/5 backdrop-blur-xl"
+        data-reveal
+      >
+
+        <!-- Header -->
+        <div class="border-b border-plum-50 px-5 py-6 sm:px-8 sm:py-7">
+          <div class="flex items-start justify-between gap-5">
+            <div>
+              <div class="mb-3 inline-flex items-center gap-2 rounded-full bg-plum-50 px-3 py-1.5 text-[10px] font-bold uppercase tracking-[0.16em] text-plum-600">
+                <span class="h-1.5 w-1.5 rounded-full bg-plum-500"></span>
+                Care request
+              </div>
+
+              <h2 class="font-display text-2xl font-bold tracking-tight text-plum-950 sm:text-3xl">
+                Book a visit
+              </h2>
+
+              <p class="mt-2 max-w-xl text-sm leading-6 text-plum-900/50">
+                Tell us what's needed and where. We'll use your details to find a verified nurse nearby.
+              </p>
+            </div>
+
+            <div class="hidden h-12 w-12 shrink-0 items-center justify-center rounded-2xl bg-plum-50 text-plum-600 sm:flex">
+              <i data-lucide="calendar-plus-2" class="h-5 w-5"></i>
+            </div>
+          </div>
         </div>
-        <div class="mb-5">
-            <label class="block text-sm font-medium mb-1">Appointment time</label>
-            <input type="datetime-local" name="requested_appointment_time" class="w-full border border-border rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-primary">
-            {% if errors.requested_appointment_time %}<div class="text-alert text-sm mt-1">{{ errors.requested_appointment_time }}</div>{% endif %}
+
+        <form
+          method="post"
+          action="{% url 'care_request_create' %}"
+          @submit="if (!validate()) { $event.preventDefault(); }"
+          novalidate
+          class="px-5 py-6 sm:px-8 sm:py-8"
+        >
+          {% csrf_token %}
+
+          {% if errors %}
+          <div class="mb-7 flex items-start gap-3 rounded-2xl border border-[#F5C8D0] bg-[#FDF0F2] px-4 py-4 text-[#B33A50]">
+            <div class="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl bg-white/70">
+              <i data-lucide="triangle-alert" class="h-4 w-4"></i>
+            </div>
+
+            <div>
+              <p class="text-sm font-bold">Review your booking</p>
+              <p class="mt-1 text-xs leading-5 text-[#B33A50]/70">
+                Please fix the highlighted fields before continuing.
+              </p>
+            </div>
+          </div>
+          {% endif %}
+
+          <div class="space-y-8">
+
+            <!-- SECTION: Care -->
+            <section>
+              <div class="mb-4 flex items-center gap-3">
+                <div class="flex h-9 w-9 items-center justify-center rounded-xl bg-plum-50 text-plum-600">
+                  <i data-lucide="hand-heart" class="h-4 w-4"></i>
+                </div>
+
+                <div>
+                  <p class="text-[10px] font-bold uppercase tracking-[0.16em] text-plum-900/35">
+                    01
+                  </p>
+                  <h3 class="text-sm font-bold text-plum-950">
+                    What kind of care do you need?
+                  </h3>
+                </div>
+              </div>
+
+              <!-- Care type -->
+              <div>
+                <label
+                  for="care_type"
+                  class="mb-2 block text-xs font-semibold text-plum-900/55"
+                >
+                  Care type
+                </label>
+
+                <div class="relative">
+                  <div class="pointer-events-none absolute inset-y-0 left-0 flex w-12 items-center justify-center text-plum-400">
+                    <i data-lucide="activity" class="h-[18px] w-[18px]"></i>
+                  </div>
+
+                  <select
+                    id="care_type"
+                    name="care_type"
+                    x-model="fields.care_type"
+                    @change="touch('care_type')"
+                    class="w-full appearance-none rounded-2xl border bg-white py-4 pl-12 pr-12 text-sm font-semibold text-plum-950 outline-none transition-all focus:ring-4"
+                    :class="errors.care_type
+                      ? 'border-[#D9455F] focus:border-[#D9455F] focus:ring-[#D9455F]/10'
+                      : 'border-plum-100 hover:border-plum-200 focus:border-plum-500 focus:ring-plum-500/10'"
+                  >
+                    <option value="">Select care type</option>
+
+                    <option value="antenatal_care" {% if data.care_type == "antenatal_care" %}selected{% endif %}>
+                      Antenatal Care
+                    </option>
+
+                    <option value="wound_dressing" {% if data.care_type == "wound_dressing" %}selected{% endif %}>
+                      Wound Dressing
+                    </option>
+
+                    <option value="vitals_check" {% if data.care_type == "vitals_check" %}selected{% endif %}>
+                      General Vitals Check
+                    </option>
+
+                    <option value="other" {% if data.care_type == "other" %}selected{% endif %}>
+                      Other
+                    </option>
+                  </select>
+
+                  <div class="pointer-events-none absolute inset-y-0 right-0 flex w-12 items-center justify-center text-plum-400">
+                    <i data-lucide="chevron-down" class="h-4 w-4"></i>
+                  </div>
+                </div>
+
+                {% if errors.care_type %}
+                <p class="mt-2 flex items-center gap-1.5 text-xs font-medium text-[#D9455F]">
+                  <i data-lucide="circle-alert" class="h-3.5 w-3.5"></i>
+                  {{ errors.care_type }}
+                </p>
+                {% endif %}
+
+                <p
+                  x-show="errors.care_type"
+                  x-text="errors.care_type"
+                  class="mt-2 flex items-center gap-1.5 text-xs font-medium text-[#D9455F]"
+                ></p>
+              </div>
+
+              <!-- Duration -->
+              <div class="mt-6">
+                <div class="mb-3 flex items-end justify-between gap-3">
+                  <div>
+                    <p class="text-xs font-semibold text-plum-900/55">
+                      Expected duration
+                    </p>
+                    <p class="mt-0.5 text-[11px] text-plum-900/35">
+                      Choose the closest estimate.
+                    </p>
+                  </div>
+                </div>
+
+                <div class="grid gap-3 sm:grid-cols-2">
+
+                  <label
+                    class="group relative cursor-pointer overflow-hidden rounded-2xl border p-4 transition-all duration-300"
+                    :class="fields.duration_type === 'short_term'
+                      ? 'border-plum-500 bg-plum-50 shadow-lg shadow-plum-950/5'
+                      : 'border-plum-100 bg-white hover:-translate-y-0.5 hover:border-plum-200 hover:shadow-lg'"
+                  >
+                    <input
+                      type="radio"
+                      name="duration_type"
+                      value="short_term"
+                      x-model="fields.duration_type"
+                      class="sr-only"
+                    >
+
+                    <div class="flex items-start justify-between gap-3">
+                      <div class="flex h-10 w-10 items-center justify-center rounded-xl bg-plum-100 text-plum-600 transition-colors">
+                        <i data-lucide="clock-3" class="h-4 w-4"></i>
+                      </div>
+
+                      <div
+                        class="flex h-5 w-5 items-center justify-center rounded-full border transition-all"
+                        :class="fields.duration_type === 'short_term'
+                          ? 'border-plum-600 bg-plum-600 text-white'
+                          : 'border-plum-200 text-transparent'"
+                      >
+                        <i data-lucide="check" class="h-3 w-3"></i>
+                      </div>
+                    </div>
+
+                    <p class="mt-4 text-sm font-bold text-plum-950">
+                      Short-term
+                    </p>
+
+                    <p class="mt-1 text-xs text-plum-900/45">
+                      1–3 days
+                    </p>
+
+                    <div
+                      class="mt-4 h-1 rounded-full bg-plum-100"
+                      :class="fields.duration_type === 'short_term' ? 'bg-plum-200' : ''"
+                    >
+                      <div
+                        class="h-full rounded-full bg-plum-500 transition-all"
+                        :class="fields.duration_type === 'short_term' ? 'w-1/3' : 'w-0'"
+                      ></div>
+                    </div>
+                  </label>
+
+                  <label
+                    class="group relative cursor-pointer overflow-hidden rounded-2xl border p-4 transition-all duration-300"
+                    :class="fields.duration_type === 'long_term'
+                      ? 'border-plum-500 bg-plum-50 shadow-lg shadow-plum-950/5'
+                      : 'border-plum-100 bg-white hover:-translate-y-0.5 hover:border-plum-200 hover:shadow-lg'"
+                  >
+                    <input
+                      type="radio"
+                      name="duration_type"
+                      value="long_term"
+                      x-model="fields.duration_type"
+                      class="sr-only"
+                    >
+
+                    <div class="flex items-start justify-between gap-3">
+                      <div class="flex h-10 w-10 items-center justify-center rounded-xl bg-purple-50 text-purple-600">
+                        <i data-lucide="calendar-range" class="h-4 w-4"></i>
+                      </div>
+
+                      <div
+                        class="flex h-5 w-5 items-center justify-center rounded-full border transition-all"
+                        :class="fields.duration_type === 'long_term'
+                          ? 'border-plum-600 bg-plum-600 text-white'
+                          : 'border-plum-200 text-transparent'"
+                      >
+                        <i data-lucide="check" class="h-3 w-3"></i>
+                      </div>
+                    </div>
+
+                    <p class="mt-4 text-sm font-bold text-plum-950">
+                      Long-term
+                    </p>
+
+                    <p class="mt-1 text-xs text-plum-900/45">
+                      1–2 months
+                    </p>
+
+                    <div class="mt-4 h-1 rounded-full bg-plum-100">
+                      <div
+                        class="h-full rounded-full bg-plum-500 transition-all"
+                        :class="fields.duration_type === 'long_term' ? 'w-full' : 'w-0'"
+                      ></div>
+                    </div>
+                  </label>
+
+                </div>
+
+                {% if errors.duration_type %}
+                <p class="mt-2 flex items-center gap-1.5 text-xs font-medium text-[#D9455F]">
+                  <i data-lucide="circle-alert" class="h-3.5 w-3.5"></i>
+                  {{ errors.duration_type }}
+                </p>
+                {% endif %}
+              </div>
+            </section>
+
+            <!-- Divider -->
+            <div class="h-px bg-gradient-to-r from-transparent via-plum-100 to-transparent"></div>
+
+            <!-- SECTION: Schedule -->
+            <section>
+              <div class="mb-4 flex items-center gap-3">
+                <div class="flex h-9 w-9 items-center justify-center rounded-xl bg-plum-50 text-plum-600">
+                  <i data-lucide="calendar-clock" class="h-4 w-4"></i>
+                </div>
+
+                <div>
+                  <p class="text-[10px] font-bold uppercase tracking-[0.16em] text-plum-900/35">
+                    02
+                  </p>
+                  <h3 class="text-sm font-bold text-plum-950">
+                    When should the nurse arrive?
+                  </h3>
+                </div>
+              </div>
+
+              <div>
+                <label
+                  for="requested_appointment_time"
+                  class="mb-2 block text-xs font-semibold text-plum-900/55"
+                >
+                  Appointment time
+                </label>
+
+                <div class="relative">
+                  <div class="pointer-events-none absolute inset-y-0 left-0 flex w-12 items-center justify-center text-plum-400">
+                    <i data-lucide="calendar-days" class="h-[18px] w-[18px]"></i>
+                  </div>
+
+                  <input
+                    type="datetime-local"
+                    id="requested_appointment_time"
+                    name="requested_appointment_time"
+                    x-model="fields.requested_appointment_time"
+                    @blur="touch('requested_appointment_time')"
+                    value="{{ data.requested_appointment_time|default:'' }}"
+                    class="w-full rounded-2xl border bg-white py-4 pl-12 pr-4 text-sm font-semibold text-plum-950 outline-none transition-all focus:ring-4"
+                    :class="errors.requested_appointment_time
+                      ? 'border-[#D9455F] focus:border-[#D9455F] focus:ring-[#D9455F]/10'
+                      : 'border-plum-100 hover:border-plum-200 focus:border-plum-500 focus:ring-plum-500/10'"
+                  >
+                </div>
+
+                {% if errors.requested_appointment_time %}
+                <p class="mt-2 flex items-center gap-1.5 text-xs font-medium text-[#D9455F]">
+                  <i data-lucide="circle-alert" class="h-3.5 w-3.5"></i>
+                  {{ errors.requested_appointment_time }}
+                </p>
+                {% endif %}
+              </div>
+            </section>
+
+            <!-- Divider -->
+            <div class="h-px bg-gradient-to-r from-transparent via-plum-100 to-transparent"></div>
+
+            <!-- SECTION: Location -->
+            <section>
+              <div class="mb-4 flex items-center gap-3">
+                <div class="flex h-9 w-9 items-center justify-center rounded-xl bg-plum-50 text-plum-600">
+                  <i data-lucide="map-pin" class="h-4 w-4"></i>
+                </div>
+
+                <div class="min-w-0 flex-1">
+                  <p class="text-[10px] font-bold uppercase tracking-[0.16em] text-plum-900/35">
+                    03
+                  </p>
+                  <h3 class="text-sm font-bold text-plum-950">
+                    Where should care happen?
+                  </h3>
+                </div>
+
+                <button
+                  type="button"
+                  @click="useMyLocation()"
+                  class="group inline-flex shrink-0 items-center gap-2 rounded-full border border-plum-100 bg-white px-3 py-2 text-[11px] font-bold text-plum-600 shadow-sm transition-all hover:border-plum-200 hover:bg-plum-50"
+                >
+                  <i
+                    data-lucide="locate-fixed"
+                    class="h-3.5 w-3.5 transition-transform group-hover:rotate-45"
+                  ></i>
+
+                  <span x-show="!locating">
+                    Use my location
+                  </span>
+
+                  <span x-show="locating" x-cloak>
+                    Locating…
+                  </span>
+                </button>
+              </div>
+
+              <div class="overflow-hidden rounded-[1.5rem] border border-plum-100 bg-gradient-to-br from-plum-50/70 via-white to-purple-50/40 p-4 sm:p-5">
+
+                <!-- Location visual -->
+                <div class="mb-5 flex items-center gap-3 rounded-2xl border border-white bg-white/80 p-3.5 shadow-sm">
+                  <div class="relative flex h-11 w-11 shrink-0 items-center justify-center rounded-xl bg-plum-600 text-white shadow-lg shadow-plum-600/20">
+                    <i data-lucide="navigation" class="h-5 w-5"></i>
+                    <span class="absolute inset-0 animate-ping rounded-xl bg-plum-500/20"></span>
+                  </div>
+
+                  <div class="min-w-0">
+                    <p class="text-xs font-bold text-plum-950">
+                      Care location
+                    </p>
+                    <p class="mt-0.5 text-[11px] leading-5 text-plum-900/40">
+                      Use your current location or enter coordinates manually.
+                    </p>
+                  </div>
+                </div>
+
+                <!-- Coordinates -->
+                <div class="grid gap-3 sm:grid-cols-2">
+
+                  <div>
+                    <label
+                      for="latitude"
+                      class="mb-1.5 block text-[11px] font-semibold text-plum-900/50"
+                    >
+                      Latitude
+                    </label>
+
+                    <div class="relative">
+                      <div class="pointer-events-none absolute inset-y-0 left-0 flex w-10 items-center justify-center text-plum-400">
+                        <i data-lucide="north" class="h-4 w-4"></i>
+                      </div>
+
+                      <input
+                        type="number"
+                        step="any"
+                        id="latitude"
+                        name="latitude"
+                        x-model="fields.latitude"
+                        @blur="touch('latitude')"
+                        value="{{ data.latitude|default:'' }}"
+                        placeholder="6.5244"
+                        class="w-full rounded-xl border bg-white py-3 pl-10 pr-3 text-sm font-medium text-plum-950 outline-none transition-all focus:ring-4"
+                        :class="errors.latitude
+                          ? 'border-[#D9455F] focus:border-[#D9455F] focus:ring-[#D9455F]/10'
+                          : 'border-plum-100 focus:border-plum-500 focus:ring-plum-500/10'"
+                      >
+                    </div>
+                  </div>
+
+                  <div>
+                    <label
+                      for="longitude"
+                      class="mb-1.5 block text-[11px] font-semibold text-plum-900/50"
+                    >
+                      Longitude
+                    </label>
+
+                    <div class="relative">
+                      <div class="pointer-events-none absolute inset-y-0 left-0 flex w-10 items-center justify-center text-plum-400">
+                        <i data-lucide="east" class="h-4 w-4"></i>
+                      </div>
+
+                      <input
+                        type="number"
+                        step="any"
+                        id="longitude"
+                        name="longitude"
+                        x-model="fields.longitude"
+                        @blur="touch('longitude')"
+                        value="{{ data.longitude|default:'' }}"
+                        placeholder="3.3792"
+                        class="w-full rounded-xl border bg-white py-3 pl-10 pr-3 text-sm font-medium text-plum-950 outline-none transition-all focus:ring-4"
+                        :class="errors.longitude
+                          ? 'border-[#D9455F] focus:border-[#D9455F] focus:ring-[#D9455F]/10'
+                          : 'border-plum-100 focus:border-plum-500 focus:ring-plum-500/10'"
+                      >
+                    </div>
+                  </div>
+                </div>
+
+                {% if errors.latitude or errors.longitude %}
+                <p class="mt-3 flex items-start gap-2 rounded-xl bg-[#FDF0F2] px-3.5 py-3 text-xs font-medium text-[#D9455F]">
+                  <i data-lucide="circle-alert" class="mt-0.5 h-3.5 w-3.5 shrink-0"></i>
+                  <span>
+                    Latitude and longitude are required — use the location button or enter them manually.
+                  </span>
+                </p>
+                {% endif %}
+
+                <!-- Landmark -->
+                <div class="mt-5">
+                  {% include "partials/_field.html" with name="landmark" label="Nearest landmark (optional)" value=data.landmark placeholder="e.g. Opposite Shoprite, Lekki Phase 1" %}
+                </div>
+
+              </div>
+            </section>
+
+            <!-- Notes -->
+            <section>
+              <div class="mb-4 flex items-center gap-3">
+                <div class="flex h-9 w-9 items-center justify-center rounded-xl bg-plum-50 text-plum-600">
+                  <i data-lucide="notebook-pen" class="h-4 w-4"></i>
+                </div>
+
+                <div>
+                  <p class="text-[10px] font-bold uppercase tracking-[0.16em] text-plum-900/35">
+                    04
+                  </p>
+                  <h3 class="text-sm font-bold text-plum-950">
+                    Anything else we should know?
+                  </h3>
+                </div>
+              </div>
+
+              {% include "partials/_field.html" with name="symptoms_notes" label="Notes for the nurse (optional)" type="textarea" value=data.symptoms_notes placeholder="Anything the nurse should know before arriving" %}
+            </section>
+
+            <!-- Final confirmation -->
+            <div class="overflow-hidden rounded-[1.5rem] border border-plum-100 bg-[#15121B] p-4 text-white sm:p-5">
+              <div class="flex items-start gap-3">
+                <div class="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-white/10">
+                  <i data-lucide="clipboard-check" class="h-5 w-5 text-plum-200"></i>
+                </div>
+
+                <div class="min-w-0">
+                  <p class="text-xs font-bold uppercase tracking-[0.14em] text-white/35">
+                    Ready to continue
+                  </p>
+
+                  <p class="mt-1 text-sm font-semibold text-white/90">
+                    Your request will move to payment.
+                  </p>
+
+                  <p class="mt-1 text-[11px] leading-5 text-white/35">
+                    After submitting these details, you'll continue through the booking payment flow.
+                  </p>
+                </div>
+              </div>
+
+              <div class="mt-5 grid grid-cols-3 gap-2">
+                <div class="rounded-xl bg-white/5 px-3 py-2.5">
+                  <p class="text-[9px] font-bold uppercase tracking-wider text-white/25">
+                    Care
+                  </p>
+                  <p
+                    class="mt-1 truncate text-[11px] font-semibold text-white/65"
+                    x-text="fields.care_type ? fields.care_type.replaceAll('_', ' ') : 'Not set'"
+                  ></p>
+                </div>
+
+                <div class="rounded-xl bg-white/5 px-3 py-2.5">
+                  <p class="text-[9px] font-bold uppercase tracking-wider text-white/25">
+                    Duration
+                  </p>
+                  <p
+                    class="mt-1 truncate text-[11px] font-semibold text-white/65"
+                    x-text="fields.duration_type === 'long_term' ? 'Long-term' : 'Short-term'"
+                  ></p>
+                </div>
+
+                <div class="rounded-xl bg-white/5 px-3 py-2.5">
+                  <p class="text-[9px] font-bold uppercase tracking-wider text-white/25">
+                    Location
+                  </p>
+                  <p
+                    class="mt-1 truncate text-[11px] font-semibold"
+                    :class="fields.latitude && fields.longitude ? 'text-emerald-300' : 'text-white/35'"
+                    x-text="fields.latitude && fields.longitude ? 'Ready' : 'Required'"
+                  ></p>
+                </div>
+              </div>
+            </div>
+
+            <!-- Submit -->
+            <button
+              type="submit"
+              class="group relative flex w-full items-center justify-center gap-3 overflow-hidden rounded-2xl bg-plum-600 px-6 py-4 text-sm font-bold text-white shadow-xl shadow-plum-600/20 transition-all duration-300 hover:-translate-y-0.5 hover:bg-plum-700 hover:shadow-2xl hover:shadow-plum-700/25 active:translate-y-0"
+            >
+              <span class="absolute inset-0 bg-gradient-to-r from-transparent via-white/10 to-transparent opacity-0 transition-opacity duration-500 group-hover:opacity-100"></span>
+
+              <span class="relative flex h-8 w-8 items-center justify-center rounded-xl bg-white/10">
+                <i data-lucide="arrow-right" class="h-4 w-4 transition-transform group-hover:translate-x-0.5"></i>
+              </span>
+
+              <span class="relative">
+                Continue to payment
+              </span>
+
+              <i
+                data-lucide="credit-card"
+                class="relative h-4 w-4 opacity-50"
+              ></i>
+            </button>
+
+            <div class="flex items-center justify-center gap-2 text-center">
+              <i data-lucide="lock-keyhole" class="h-3.5 w-3.5 text-plum-400"></i>
+              <p class="text-[10px] font-medium text-plum-900/35">
+                Secure booking flow · Navvi Care
+              </p>
+            </div>
+
+          </div>
+        </form>
+      </main>
+    </div>
+
+    <!-- Bottom trust rail -->
+    <div
+      class="mt-6 grid gap-3 sm:grid-cols-3"
+      data-reveal
+    >
+      <div class="flex items-center gap-3 rounded-2xl border border-plum-100 bg-white/70 px-4 py-3.5 backdrop-blur-xl">
+        <div class="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl bg-plum-50 text-plum-600">
+          <i data-lucide="badge-check" class="h-4 w-4"></i>
         </div>
-        <button type="submit" :disabled="submitting"
-                class="w-full bg-primary text-white font-medium rounded-lg py-2.5 hover:bg-primaryDark transition disabled:opacity-60">
-            <span x-show="!submitting">Book</span>
-            <span x-show="submitting">Booking&hellip;</span>
-        </button>
-    </form>
+
+        <div>
+          <p class="text-xs font-bold text-plum-950">Verified professionals</p>
+          <p class="mt-0.5 text-[10px] text-plum-900/35">Credentialed nurses</p>
+        </div>
+      </div>
+
+      <div class="flex items-center gap-3 rounded-2xl border border-plum-100 bg-white/70 px-4 py-3.5 backdrop-blur-xl">
+        <div class="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl bg-emerald-50 text-emerald-600">
+          <i data-lucide="shield" class="h-4 w-4"></i>
+        </div>
+
+        <div>
+          <p class="text-xs font-bold text-plum-950">Secure request</p>
+          <p class="mt-0.5 text-[10px] text-plum-900/35">Protected booking flow</p>
+        </div>
+      </div>
+
+      <div class="flex items-center gap-3 rounded-2xl border border-plum-100 bg-white/70 px-4 py-3.5 backdrop-blur-xl">
+        <div class="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl bg-amber-50 text-amber-600">
+          <i data-lucide="map-pinned" class="h-4 w-4"></i>
+        </div>
+
+        <div>
+          <p class="text-xs font-bold text-plum-950">Location aware</p>
+          <p class="mt-0.5 text-[10px] text-plum-900/35">Match care nearby</p>
+        </div>
+      </div>
+    </div>
+
+  </div>
 </div>
+
+{% endblock %}
+
+{% block extra_scripts %}
+
+<script>
+  function bookingForm() {
+    return {
+      fields: {
+        care_type: '{{ data.care_type|default:"" }}',
+        duration_type: '{{ data.duration_type|default:"short_term" }}',
+        requested_appointment_time: '{{ data.requested_appointment_time|default:"" }}',
+        latitude: '{{ data.latitude|default:"" }}',
+        longitude: '{{ data.longitude|default:"" }}',
+      },
+
+      errors: {},
+
+      locating: false,
+
+      useMyLocation() {
+        if (!navigator.geolocation) {
+          this.errors.latitude = 'Location is not supported by this browser.';
+          this.errors.longitude = 'Location is not supported by this browser.';
+          return;
+        }
+
+        this.locating = true;
+
+        navigator.geolocation.getCurrentPosition(
+          (pos) => {
+            this.fields.latitude = pos.coords.latitude.toFixed(6);
+            this.fields.longitude = pos.coords.longitude.toFixed(6);
+
+            this.touch('latitude');
+            this.touch('longitude');
+
+            this.locating = false;
+          },
+          () => {
+            this.locating = false;
+          }
+        );
+      },
+
+      touch(field) {
+        const v = this.fields[field];
+        let msg = '';
+
+        if (field === 'care_type' && !v) {
+          msg = 'Select a care type.';
+        }
+
+        if (field === 'requested_appointment_time' && !v) {
+          msg = 'Pick an appointment time.';
+        }
+
+        if ((field === 'latitude' || field === 'longitude') && v === '') {
+          msg = 'Required.';
+        }
+
+        if (msg) {
+          this.errors[field] = msg;
+        } else {
+          delete this.errors[field];
+        }
+      },
+
+      validate() {
+        [
+          'care_type',
+          'requested_appointment_time',
+          'latitude',
+          'longitude'
+        ].forEach(f => this.touch(f));
+
+        return Object.keys(this.errors).length === 0;
+      },
+    }
+  }
+
+  document.addEventListener('DOMContentLoaded', () => {
+    if (window.lucide) {
+      lucide.createIcons();
+    }
+  });
+</script>
+
 {% endblock %}

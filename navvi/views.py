@@ -1,7 +1,3 @@
-from django.shortcuts import render
-
-# Create your views here.
-
 """
 Navvi — views.py (plain Django, PWA-oriented, no django.forms)
 
@@ -31,19 +27,21 @@ from django.contrib.auth import authenticate, login, logout
 from django.contrib.auth.decorators import login_required, user_passes_test
 from django.core.exceptions import ValidationError
 from django.db import IntegrityError, transaction
-from django.http import JsonResponse, HttpResponseBadRequest, HttpResponseForbidden
+from django.http import JsonResponse, HttpResponseBadRequest, HttpResponseForbidden, HttpResponse
 from django.shortcuts import render, redirect, get_object_or_404
 from django.utils import timezone
 from django.views.decorators.csrf import csrf_exempt
 from django.views.decorators.http import require_POST, require_GET
 
 from .models import (
-    User, NurseProfile, NurseDocument, VerificationEvent,
+    User, PatientProfile, NurseProfile, NurseDocument, VerificationEvent,
     CareRequest, Assignment, VitalsRecord, EmergencyReferral,
     Payment, EscrowAccount, Milestone, Payout,
     Rating, Dispute, Notification,
 )
 
+def home(request):
+    return render(request, "home.html")
 
 # ---------------------------------------------------------------------------
 # Role-check decorators
@@ -118,6 +116,22 @@ def _to_bool(value):
     return str(value).lower() in ("1", "true", "yes", "on")
 
 
+def _wants_json(request):
+    """True when the request came from our own fetch() calls (navviFetch always
+    sets this header), so the view can return JSON instead of a redirect/render."""
+    return request.headers.get("X-Requested-With") == "XMLHttpRequest"
+
+
+@require_GET
+def service_worker(request):
+    """
+    Serves sw.js at the site root (not /static/sw.js) so its scope covers
+    the whole app. STATIC_ROOT/sw.js is the source file — see urls.py.
+    """
+    with open(settings.BASE_DIR / "static" / "sw.js", "rb") as f:
+        return HttpResponse(f.read(), content_type="application/javascript")
+
+
 # ===========================================================================
 # Auth (login/logout — nurse registration lives in section A below;
 # patient/admin/partner registration isn't built yet)
@@ -151,9 +165,13 @@ def login_view(request):
             user = authenticate(request, username=phone_number, password=password)
             if user is not None:
                 login(request, user)
+                if _wants_json(request):
+                    return JsonResponse({"redirect": _post_login_redirect(user).url})
                 return _post_login_redirect(user)
             error = "Invalid phone number or password."
 
+    if _wants_json(request):
+        return JsonResponse({"error": error}, status=400)
     return render(request, "auth/login.html", {"error": error})
 
 
@@ -161,6 +179,42 @@ def login_view(request):
 def logout_view(request):
     logout(request)
     return redirect("login")
+
+
+def patient_register(request):
+    """Public — a patient/family account. No verification step needed, unlike nurses."""
+    errors = {}
+    if request.method == "POST":
+        data = request.POST
+        required = ["full_name", "phone_number", "password"]
+        for field in _require_fields(data, *required):
+            errors[field] = "This field is required."
+
+        if not errors:
+            try:
+                with transaction.atomic():
+                    user = User.objects.create_user(
+                        username=data["phone_number"].strip(),
+                        phone_number=data["phone_number"].strip(),
+                        password=data["password"],
+                        first_name=data["full_name"].strip(),
+                        role=User.Role.PATIENT,
+                    )
+                    PatientProfile.objects.create(
+                        user=user,
+                        is_diaspora_booker=_to_bool(data.get("is_diaspora_booker", False)),
+                    )
+            except IntegrityError:
+                errors["phone_number"] = "An account with this phone number already exists."
+            else:
+                login(request, user)
+                if _wants_json(request):
+                    return JsonResponse({"redirect": redirect("my_care_requests").url})
+                return redirect("my_care_requests")
+
+    if _wants_json(request):
+        return JsonResponse({"errors": errors}, status=400 if errors else 200)
+    return render(request, "patients/register.html", {"errors": errors, "data": request.POST if request.method == "POST" else {}})
 
 
 # ===========================================================================
@@ -200,8 +254,12 @@ def nurse_register(request):
                 errors["phone_number"] = "An account with this phone number already exists."
             else:
                 login(request, user)
+                if _wants_json(request):
+                    return JsonResponse({"redirect": redirect("nurse_verification_status").url})
                 return redirect("nurse_verification_status")
 
+    if _wants_json(request):
+        return JsonResponse({"errors": errors}, status=400 if errors else 200)
     return render(request, "nurses/register.html", {"errors": errors, "data": request.POST if request.method == "POST" else {}})
 
 
@@ -235,6 +293,13 @@ def nurse_document_upload(request):
 def nurse_verification_status(request):
     """Nurse checks their own verification status."""
     nurse = request.user.nurse_profile
+    if request.GET.get("format") == "json":
+        return JsonResponse({
+            "verification_status": nurse.verification_status,
+            "suspension_reason": nurse.suspension_reason,
+            "reliability_score": str(nurse.reliability_score),
+            "license_expiry_date": nurse.license_expiry_date.isoformat() if nurse.license_expiry_date else None,
+        })
     return render(request, "nurses/verification_status.html", {"nurse": nurse})
 
 
@@ -318,8 +383,12 @@ def care_request_create(request):
                 errors.update(exc.message_dict)
             else:
                 care_request.save()
+                if _wants_json(request):
+                    return JsonResponse({"redirect": redirect("care_request_detail", care_request_id=care_request.id).url})
                 return redirect("care_request_detail", care_request_id=care_request.id)
 
+    if _wants_json(request):
+        return JsonResponse({"errors": errors}, status=400 if errors else 200)
     return render(request, "bookings/create.html", {"errors": errors})
 
 
@@ -335,6 +404,20 @@ def _is_valid_isoformat(value):
 def my_care_requests(request):
     """Patient/family views their own bookings and statuses."""
     requests_qs = CareRequest.objects.filter(booked_by=request.user).order_by("-created_at")
+    if request.GET.get("format") == "json":
+        return JsonResponse({
+            "care_requests": [
+                {
+                    "id": str(cr.id),
+                    "care_type": cr.care_type,
+                    "care_type_display": cr.get_care_type_display(),
+                    "status": cr.status,
+                    "status_display": cr.get_status_display(),
+                    "requested_appointment_time": cr.requested_appointment_time.isoformat(),
+                }
+                for cr in requests_qs
+            ]
+        })
     return render(request, "bookings/list.html", {"care_requests": requests_qs})
 
 
@@ -342,6 +425,11 @@ def my_care_requests(request):
 def care_request_detail(request, care_request_id):
     """Status tracking for a single booking (patient sees nurse assignment/status here)."""
     care_request = get_object_or_404(CareRequest, pk=care_request_id, booked_by=request.user)
+    if request.GET.get("format") == "json":
+        return JsonResponse({
+            "status": care_request.status,
+            "status_display": care_request.get_status_display(),
+        })
     return render(request, "bookings/detail.html", {"care_request": care_request})
 
 
@@ -620,6 +708,20 @@ def nurse_wallet(request):
     nurse = request.user.nurse_profile
     payouts = Payout.objects.filter(nurse=nurse).order_by("-created_at")
     available_balance = sum(p.amount for p in payouts.filter(status=Payout.Status.PAID))
+    if request.GET.get("format") == "json":
+        return JsonResponse({
+            "available_balance": str(available_balance),
+            "payouts": [
+                {
+                    "id": str(p.id),
+                    "amount": str(p.amount),
+                    "status": p.status,
+                    "is_milestone": p.milestone_id is not None,
+                    "created_at": p.created_at.isoformat(),
+                }
+                for p in payouts
+            ],
+        })
     return render(request, "nurses/wallet.html", {"available_balance": available_balance, "payouts": payouts})
 
 
@@ -724,14 +826,3 @@ def admin_dispatch_monitor(request):
     if status_filter:
         qs = qs.filter(status=status_filter)
     return render(request, "admin/dispatch_monitor.html", {"care_requests": qs})
-
-
-
-from django.http import HttpResponse
-
-
-from django.shortcuts import render
-
-
-def home(request):
-    return render(request, "home.html")

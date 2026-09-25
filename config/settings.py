@@ -26,7 +26,7 @@ SECRET_KEY = os.environ.get(
 DEBUG = os.environ.get("NAVVI_DEBUG", "True") == "True"
 ALLOWED_HOSTS = os.environ.get(
     "NAVVI_ALLOWED_HOSTS",
-    "localhost,127.0.0.1,navvi-7efe.onrender.com"
+    "localhost,127.0.0.1,navvi-7efe.onrender.com,navvi-89hy.onrender.com"
 ).split(",")
 
 CSRF_TRUSTED_ORIGINS = (
